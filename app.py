@@ -403,57 +403,50 @@ def show_plot_button(df):
     df_output = results.output
     check_cons_positive(df_output, cons_floor = 0)
     df_output['RRI'] = (df_output.cons_after / df_output.cons_bef * 100).round(1)
-    age_respondent = df_output['year_cons_bef'][0] - d_hh['byear']
+    
+    
+    # prob prepared:
+    pr_low = int(np.round(100 * (df_output['RRI'] >= replace_rate_cons['low']).mean(), 0))
+    pr_high = int(np.round(100 * (df_output['RRI'] >= replace_rate_cons['high']).mean(), 0))
 
-    # figure stochastic
     fig = go.Figure()
-    fig.add_scatter(x=df_output.cons_bef, y=df_output.cons_after,
-                    mode='markers', 
-                    marker=dict(size=10, line=dict(color='MediumPurple', width=2)),
+    cons_after = df_output.cons_after
+    noise = 0.2
+    y = np.random.uniform(low=1-noise, high=1+noise, size=cons_after.shape)
+    fig.add_scatter(x=cons_after, y=y, mode='markers',
+                    marker=dict(size=12),
+                    marker_color='blue',
                     hovertemplate=
-                    '%{text}<br>' +
-                    'cons. bef. ret: $%{x:,.0f} <br>'+
-                    'cons. after ret: $%{y:,.0f} <br>'+
+                    '$%{x:,.0f} <br>'
                     '<extra></extra>',
-                    text=['replacement rate = {:.0f}%'.format(x) for x in df_output.RRI.values],
                     showlegend = False)
-
-    fig.add_scatter(x=[df_output.cons_bef.mean()], y=[df_output.cons_after.mean()],
-                    mode='markers', name='Mean consumptions',
-                    marker_size=15, marker_symbol='x',
+    
+    fig.add_scatter(x=[cons_after.mean()], y=[1], mode='markers',
+                    marker_symbol='x',
+                    marker=dict(size=15, color='darkred'),
+                    name='Average household income<br>available for spending<br>after retirement',
                     hovertemplate=
-                    '%{text}<br>' +
-                    'cons. bef. ret: $%{x:,.0f} <br>'+
-                    'cons. after ret: $%{y:,.0f} <br>'+
-                    '<extra></extra>',
-                    text=['replacement rate = {:.0f}%'.format(x) for x in df_output.RRI.values])
-    
-    cons_bef = np.array([df_output.cons_bef.min()-1000, 
-                         df_output.cons_bef.max()+1000]) # - 1000/+1000 for case min = max
-    fig.add_trace(go.Scatter(
-        x=cons_bef, y=replace_rate_cons['low'] / 100 * cons_bef, mode='lines',
-        name=f"Replacement rate = {replace_rate_cons['low']}%",
-        line=dict(color="Green", width=2, dash='dot')))
-    fig.add_trace(go.Scatter(
-        x=cons_bef, y=replace_rate_cons['high'] / 100 * cons_bef,
-        mode='lines', name=f"Replacement rate = {replace_rate_cons['high']}%",
-        line=dict(color="RoyalBlue", width=2, dash='dash')))
-    
-    fig.update_layout(height=500, width=700,
-                    title={'text': f"<b>Household income available for spending before and after retirement <br> (in 2020 $, {nsim} realizations)</b>",
+                    'cons. after ret: $%{x:,.0f} <br>'
+                    '<extra></extra>')
+
+    fig.update_layout(height=250, width=700,
+                    title={'text': f"<b>Household income available for spending after retirement <br> (in 2020 $, {nsim} realizations)</b>",
                             'x': 0.5, 'xanchor': 'center', 'yanchor': 'bottom'},
-                    xaxis_title=f"Before retirement<br>(year when respondent is {age_respondent} y.o.)",
                     xaxis_tickformat=",",
-                    yaxis_title="After retirement",
-                    yaxis_tickformat=",",
+                    xaxis_title=f"Probabilities of exceeding the low and high replacement rate: {pr_low}% and {pr_high}%",
+                    xaxis_title_font_size=14,
+                    yaxis=dict(range=[0, 2], visible= False, showticklabels=False),
                     font=dict(size=14, color="Black"),
                     legend={'traceorder':'reversed'})
+    
     st.plotly_chart(fig)
+
     with st.beta_expander("HOW TO READ THIS FIGURE"):
         st.markdown("""
-            * This figure shows 25 “realizations” of household income available for spending before retirement and after. “Before retirement” is defined as the year when the first spouse to retire is age 55, or the year before he/she retires if earlier — but no sooner than 2020. “After retirement” is defined as the year when the the last spouse to retire is age 65, or his/her retirement year if later.
+            * This figure shows 25 “realizations”, or possibilities of household income available for spending after retirement, with their mean. “After retirement” is defined as the year when the the last spouse to retire is age 65, or his/her retirement year if later.
             * Variations in income available for spending are driven by the stochastic processes for earnings and asset/investment returns.
-            * The two dashed lines show where dots would lie for the two selected “replacement rates”.""", unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
+    
 
     # create data with changes in contribution rate rrsp and retirement age
     df_change = create_data_changes(df)
@@ -462,8 +455,10 @@ def show_plot_button(df):
                                    **user_options, **returns, **mean_returns)
     results.merge()
     df_change = results.df_merged
+    age_respondent = df_change['year_cons_bef'][0] - d_hh['byear']
     
     # graph changes in contribution rate rrsp and retirement age
+    
     names = ['Main scenario', 'RRSP contrib +5%', 'RRSP contrib +10%',
              'Retirement age -2 years', 'Retirement age +2 years']
     init_cons_bef, init_cons_after = df_change.loc[0, ['cons_bef', 'cons_after']].values.squeeze().tolist()
@@ -471,8 +466,9 @@ def show_plot_button(df):
     fig = go.Figure()
 
     l_cons_bef = []
-    colors = ['black', 'red', 'green', 'red', 'green']
-    symbols = ['circle', 'diamond', 'diamond', 'x', 'x']
+    colors = ['darkred', 'blue', 'green', 'blue', 'green']
+    symbols = ['x', 'diamond', 'diamond', 'circle', 'circle']
+    sizes = [15, 12, 12, 12, 12]
     for index, row in df_change.iterrows():
         l_cons_bef.append(row['cons_bef'])
         rri = row['cons_after'] / row['cons_bef'] * 100
@@ -480,14 +476,14 @@ def show_plot_button(df):
                         mode='markers',
                         marker_color=colors[index],
                         marker_symbol = symbols[index],
-                        marker=dict(size=12, line=dict(color='RebeccaPurple', width=2)),
+                        marker=dict(size=sizes[index]),
                         name=names[index],
                         hovertemplate=
                         '%{text} <br>'
-                        'cons. bef. ret: $%{x:,.0f} <br>'+
-                        'cons. after ret: $%{y:,.0f} <br>'+
+                        'Before ret: $%{x:,.0f} <br>'+
+                        'After ret: $%{y:,.0f} <br>'+
                         '<extra></extra>',
-                        text = [f'<b>{names[index]}</b> <br />replacement rate = {rri:.0f}%'],
+                        text = [f'<b>{names[index]}</b> <br />Replacement rate = {rri:.0f}%'],
                         showlegend = True)
 
     cons_bef = np.array([min(l_cons_bef), max(l_cons_bef)])
