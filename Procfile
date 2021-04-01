@@ -1,0 +1,1 @@
+web: sleep 10 && touch '/tmp/app-initialized' & bin/start-nginx streamlit run --server.enableCORS false --server.port 8501 --theme.primaryColor="#F63366" --theme.backgroundColor="#FFFFFF" --theme.secondaryBackgroundColor="#F0F2F6" --theme.textColor="#262730" app.py

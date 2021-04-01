@@ -1,0 +1,10 @@
+,bills,bonds,equity,fee
+Checking or regular savings account,1,0,0,0.01
+High interest/premium savings account,1,0,0,0
+Mutual funds,0,0.4,0.6,0.015
+Stocks,0,0,1,0.025
+Bonds,0,1,0,0.025
+GICs,1,0,0,0.005
+Cash value of permanent life policy,0,1,0,0.02
+Individual segregated funds,0,0.4,0.6,0.02
+ETFs,0,0,1,0.005
