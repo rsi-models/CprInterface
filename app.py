@@ -391,6 +391,42 @@ def create_data_changes(df):
     return df_change
 
 
+# CHANGES TO PARAMETERS
+
+def change_mean_returns(mean_returns):
+    st.markdown("# Financial assumptions")
+    st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) regarding future asset/investment returns?")
+    keep_returns = st.radio("", ["Yes", "No"], key='keep_returns', index=0)
+    if keep_returns == 'No':
+        st.write("Long-term mean...")
+        for key, val in mean_returns.items():
+            if key != 'mu_price_rent':
+                mean_returns[key] = st.slider(
+                    f'... annual real return on {key[3:]} (in %)', min_value=0.0, max_value=10.0,
+                    step=1.0, key="long_term_returns_"+key[3:], value=100 * val,
+                    help="Nominal returns are used in the simulator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
+            
+        mean_returns['mu_price_rent'] = st.slider(
+                f'... price-rent ratio', min_value=0.0, max_value=30.0,
+                step=1.0, key="long_term_price_rent",
+                value=float(mean_returns['mu_price_rent']))
+        
+def change_replace_rate_cons():
+    st.markdown("# Replacement rates") 
+    st.markdown("The adequacy of retirement incomes is often assessed using “consumption replacement rates”. In the case of income available for spending (i.e. net of taxes, savings and debt payments), thresholds of 80% and 65% have been used in the <div class=tooltip>RSI<span class=tooltiptext>Retirement and Savings Institute</span></div>’s [June 2020 report](https://ire.hec.ca/en/canadians-preparation-retirement-cpr/) report  as well as in previous research and policy literature. Use these thresholds as benchmarks in the results figures?", unsafe_allow_html=True)
+    
+    keep_rri = st.radio("", ["Yes", "No"], key='keep_rri', index=0)
+    if keep_rri == 'No':
+        replace_rate_cons['high'] = st.slider(
+            f'High replacement rate (in % of pre-retirement consumption)',
+            min_value=0, max_value=100,
+            step=1, key="high_replace_rate_cons", value=80)
+        replace_rate_cons['low'] = st.slider(
+            f'Low replacement rate (in % of pre-retirement consumption)',
+            min_value=0, max_value=100,
+            step=1, key="low_replace_rate_cons", value=65)
+
+
 # GRAPHS
 
 def show_plot_button(df):
@@ -433,7 +469,7 @@ def show_plot_button(df):
                     title={'text': f"<b>Household income available for spending after retirement <br> (in 2020 $, {nsim} realizations)</b>",
                             'x': 0.5, 'xanchor': 'center', 'yanchor': 'bottom'},
                     xaxis_tickformat=",",
-                    xaxis_title=f"Probabilities of exceeding the low and high replacement rate: {pr_low}% and {pr_high}%",
+                    xaxis_title=f"<b>Probability of exceeding the low and high replacement rate,<br>respectively: {pr_low}% and {pr_high}%</b>",
                     xaxis_title_font_size=14,
                     yaxis=dict(range=[0, 2], visible= False, showticklabels=False),
                     font=dict(size=14, color="Black"),
@@ -626,39 +662,6 @@ replace_rate_cons = {'high': 80, 'low': 65}
 
 # db pension rate by default
 others = {'perc_year_db': 0.02}
-
-def change_mean_returns(mean_returns):
-    st.markdown("# Financial assumptions")
-    st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) regarding future asset/investment returns?")
-    keep_returns = st.radio("", ["Yes", "No"], key='keep_returns', index=0)
-    if keep_returns == 'No':
-        st.write("Long-term mean...")
-        for key, val in mean_returns.items():
-            if key != 'mu_price_rent':
-                mean_returns[key] = st.slider(
-                    f'... annual real return on {key[3:]} (in %)', min_value=0.0, max_value=10.0,
-                    step=1.0, key="long_term_returns_"+key[3:], value=100 * val,
-                    help="Nominal returns are used in the simulator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
-            
-        mean_returns['mu_price_rent'] = st.slider(
-                f'... price-rent ratio', min_value=0.0, max_value=30.0,
-                step=1.0, key="long_term_price_rent",
-                value=float(mean_returns['mu_price_rent']))
-        
-def change_replace_rate_cons():
-    st.markdown("# Replacement rates") 
-    st.markdown("The adequacy of retirement incomes is often assessed using “consumption replacement rates”. In the case of income available for spending (i.e. net of taxes, savings and debt payments), thresholds of 80% and 65% have been used in the <div class=tooltip>RSI<span class=tooltiptext>Retirement and Savings Institute</span></div>’s [June 2020 report](https://ire.hec.ca/en/canadians-preparation-retirement-cpr/) report  as well as in previous research and policy literature. Use these thresholds as benchmarks in the results figures?", unsafe_allow_html=True)
-    
-    keep_rri = st.radio("", ["Yes", "No"], key='keep_rri', index=0)
-    if keep_rri == 'No':
-        replace_rate_cons['high'] = st.slider(
-            f'High replacement rate (in % of pre-retirement consumption)',
-            min_value=0, max_value=100,
-            step=1, key="high_replace_rate_cons", value=80)
-        replace_rate_cons['low'] = st.slider(
-            f'Low replacement rate (in % of pre-retirement consumption)',
-            min_value=0, max_value=100,
-            step=1, key="low_replace_rate_cons", value=65)
     
 
 st.markdown(f"""
