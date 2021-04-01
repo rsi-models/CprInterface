@@ -187,7 +187,7 @@ def debts(step_amount=100):
                  'Other debt':'other_debt'}
     l_debts = debt_dict.values()
 
-    debt_list = st.multiselect(label="Select your debts types", options=list(debt_dict.keys()), key="debt_names") #addition
+    debt_list = st.multiselect(label="Select your debt types", options=list(debt_dict.keys()), key="debt_names") #addition
 
     d_debts = {}
     for i in debt_list:
@@ -423,8 +423,9 @@ def change_replace_rate_cons():
             step=1, key="high_replace_rate_cons", value=80)
         replace_rate_cons['low'] = st.slider(
             f'Low replacement rate (in % of pre-retirement consumption)',
-            min_value=0, max_value=100,
-            step=1, key="low_replace_rate_cons", value=65)
+            min_value=0, max_value=replace_rate_cons['high'],
+            value=min(65, replace_rate_cons['high']),
+            step=1, key="low_replace_rate_cons")
 
 
 # GRAPHS
@@ -725,7 +726,8 @@ with col2:
     with st.beta_expander("Functioning of the tool", expanded=True):
         st.markdown("""
             The <div class="tooltip">CPR<span class="tooltiptext">Canadians' Preparation for Retirement</span></div>
-            projects a household’s financial situation into the future to a pre-specified age of retirement for each individual, using a number of processes and assumptions [summarized here](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) and [graphically depicted here](https://ire.hec.ca/wp-content/uploads/2021/03/CPR_flow5.pdf). At that age, it converts all financial wealth (and optionally residences and businesses) into an “actuarially fair” annuity, using the most recent life tables as well as projected bond rates. The tool computes income available for spending – after debt payments, saving, taxes, and housing for homeowners – *prior to* and *after* retirement, in 2020 (real) dollars. It returns, in the form of figures, the pre- and post-retirement financial situation, as well as a decomposition of that available income in retirement.
+            projects a household’s financial situation into the future to a pre-specified age of retirement for each individual, using a number of processes and assumptions [summarized here](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) and [graphically depicted here](https://ire.hec.ca/wp-content/uploads/2021/03/CPR_flow5.pdf). At that age, it converts all financial wealth (and optionally residences and businesses) into an “actuarially fair” annuity, using the most recent life tables as well as projected bond rates. The tool computes income available for spending – after debt payments, saving, taxes, and housing for homeowners – *prior to* and *after* retirement, in 2020 (real) dollars. 
+            It returns, in the form of figures and probabilities, information about the household’s post-retirement financial situation.
             """, unsafe_allow_html=True)
 
 
