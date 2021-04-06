@@ -720,7 +720,7 @@ st.text("")
 col1, col2 = st.beta_columns([0.5, 0.5])
 with col1:
     with st.beta_expander("Use of the tool", expanded=True):
-        st.markdown("Welcome to the individual online interface of [the CPR simulator](https://ire.hec.ca/en/canadians-preparation-retirement-cpr), [a freely available Python package](https://rsi-models.github.io/CPR/en/) also available for download for batch use. This tool is intended for use by individuals born in 1957 or later and not yet retired. To use the tool, fill in the fields and hit “Show figures” at the bottom of the page. *Your data is anonymous, only used for calculations, and is never stored; further, its transmission is encrypted.*")
+        st.markdown("Welcome to the individual online interface of [the CPR simulator](https://ire.hec.ca/en/canadians-preparation-retirement-cpr), [a freely available Python package](https://rsi-models.github.io/CPR/en/) also available for download for batch use. This tool is intended for use by individuals born in 1957 or later and not yet retired. To use the tool, fill in the fields and hit “Show figures” at the bottom of the page. *The information you enter will not be stored. Il will be transmitted securely and for calculations only. The CPR calculator will not have access to any personal information.*")
 
 with col2:
     with st.beta_expander("Functioning of the tool", expanded=True):
@@ -764,13 +764,13 @@ with col_p1:
 with col_p2:
     st.text("")
     st.text("")
-    if st.button("Update figures", False, help="Click here to update the simulation results"):
+    if st.button("UPDATE FIGURES", False, help="Click here to update the simulation results"):
         st.markdown("# Simulation results")
         show_plot_button(df)
         st.text("")
         st.text("")
 
-if st.button("Show figures (below or at top of page)", False, help="Click here to see the simulation results"):
+if st.button("SHOW FIGURES (below or at top of page)", False, help="Click here to see the simulation results"):
     with col_p2:
         st.markdown("# Simulation results")
         show_plot_button(df)
