@@ -451,8 +451,7 @@ def show_plot_button(df):
     noise = 0.2
     y = np.random.uniform(low=1-noise, high=1+noise, size=cons_after.shape)
     fig.add_scatter(x=cons_after, y=y, mode='markers',
-                    marker=dict(size=12),
-                    marker_color='blue',
+                    marker=dict(size=12, color='blue', opacity=0.3),
                     hovertemplate=
                     '$%{x:,.0f} <br>'
                     '<extra></extra>',
@@ -461,16 +460,18 @@ def show_plot_button(df):
     fig.add_scatter(x=[cons_after.mean()], y=[1], mode='markers',
                     marker_symbol='x',
                     marker=dict(size=15, color='darkred'),
-                    name='Average household income<br>available for spending<br>after retirement',
+                    name='Average of the 25 realizations<br>(horizontal line = standard deviation)',
+                    error_x=dict(type='data', array=[cons_after.std()],
+                                 color='darkred', thickness=1.5, width=10),                    
                     hovertemplate=
-                    'cons. after ret: $%{x:,.0f} <br>'
+                    '$%{x:,.0f} <br>'
                     '<extra></extra>')
 
     fig.update_layout(height=250, width=700,
                     title={'text': f"<b>Household income available for spending after retirement <br> (in 2020 $, {nsim} realizations)</b>",
                             'x': 0.5, 'xanchor': 'center', 'yanchor': 'bottom'},
                     xaxis_tickformat=",",
-                    xaxis_title=f"<b>Probability of exceeding the low and high replacement rate,<br>respectively: {pr_low}% and {pr_high}%</b>",
+                    xaxis_title=f"<b>Probability of exceeding the selected low and high replacement rates,<br>respectively: {pr_low}% and {pr_high}%</b>",
                     xaxis_title_font_size=14,
                     yaxis=dict(range=[0, 2], visible= False, showticklabels=False),
                     font=dict(size=14, color="Black"),
@@ -482,8 +483,8 @@ def show_plot_button(df):
         st.markdown("""
             * This figure shows 25 “realizations”, or possibilities of household income available for spending after retirement, with their mean. “After retirement” is defined as the year when the the last spouse to retire is age 65, or his/her retirement year if later.
             * Variations in income available for spending are driven by the stochastic processes for earnings and asset/investment returns.
+            * There is no vertical axis to the figure; the vertical differences are artificial and aim to prevent the data points from overlapping excessively.
             """, unsafe_allow_html=True)
-    
 
     # create data with changes in contribution rate rrsp and retirement age
     df_change = create_data_changes(df)
@@ -733,12 +734,10 @@ with col2:
 
 st.sidebar.markdown("# TERMS OF USE")
 st.sidebar.markdown("""This tool uses the freely available [Canadians' Preparation for Retirement (CPR) calculator](https://ire.hec.ca/en/canadians-preparation-retirement-cpr), developed by a team at [HEC Montréal](https://www.hec.ca/en/)’s [Retirement and Savings Institute](https://ire.hec.ca/en/) with financial support from the [Global Risk Institute](https://globalriskinstitute.org/)’s [National Pension Hub](https://globalriskinstitute.org/national-pension-hub/).""")
+st.sidebar.markdown("The tool is provided “as is” for personal use only, without any warranty regarding its accuracy, appropriateness, completeness or any other quality. Its results are deemed to be general information on retirement preparation and should not be construed as financial advice; qualified financial advice should be sought before making any financial decision based on this tool.")
+st.sidebar.markdown("Use of the tool implies the acceptance of the foregoing terms and constitutes an acknowledgement that the disclaimer below has been read and understood.")
 with st.sidebar.beta_expander("DISCLAIMER"):
-    st.markdown("The tool is provided “as is” for personal use only, without any warranty regarding its accuracy, appropriateness, completeness or any other quality.")
-    st.markdown("Its results are deemed to be general information on retirement preparation and should not be construed as financial advice; qualified financial advice should be sought before making any financial decision based on this tool.")
-    st.markdown("Under no circumstances shall the developing team or HEC Montréal, including its employees, officers or directors, be liable for any damages in law or in equity, including without limitation direct, indirect, punitive, incidental, special or consequential damages that result from the use of, or inability to use, the tool or from information provided on the site or from any failure of performance, error, omission, interruption, deletion, defect, delay in operation or transmission, computer virus, communication line failure, theft or destruction or unauthorized access to, alteration of, or use of record.")
-
-st.sidebar.markdown("Use of the tool implies the acceptance of the foregoing terms and constitutes an acknowledgement that the disclaimer has been read and understood.")
+    st.markdown("Under no circumstances shall the developing team or HEC Montréal, including its employees, officers or directors, be liable for any damages, including without limitation direct, indirect, punitive, incidental, special or consequential damages that result from the use of, or inability to use, the tool or from information provided on the site or from any failure of performance, error, omission, interruption, deletion, defect, delay in operation or transmission, computer virus, communication line failure, theft or destruction or unauthorized access to, alteration of, or use of record.")
 
 col_p1, _, col_p2 = st.beta_columns([0.465, 0.025, 0.51])
 
