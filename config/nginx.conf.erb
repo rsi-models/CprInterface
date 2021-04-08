@@ -33,14 +33,13 @@ http {
 
    server {
       listen <%= ENV["PORT"] %>;
-      server_name _;
+      server_name cpr.hec.ca;
       keepalive_timeout 5;
 
       location / {
-          #if ($http_x_forwarded_proto != 'https') {
-          #    rewrite ^ https://$host$request_uri? permanent;
-          #}
-          rewrite ^ https://cpr.hec.ca$request_uri? permanent;
+          if ($http_x_forwarded_proto != 'https' || $host != server_name) {
+              rewrite ^ https://cpr.hec.ca$request_uri? permanent;
+          }
           proxy_pass http://127.0.0.1:8501/;
       }
 
