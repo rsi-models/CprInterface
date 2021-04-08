@@ -33,7 +33,7 @@ http {
 
    server {
       listen <%= ENV["PORT"] %>;
-      server_name cpr.hec.ca;
+      server_name _;
       keepalive_timeout 5;
 
       location / {
