@@ -355,7 +355,7 @@ def financial_products(account, balance, which, short_acc_name, step_amount=100)
         total_fp += d_fp[account+"_"+i]
 
     if total_fp != balance and len(fin_prod_select)!=0:
-        st.error("Total amount in financial products ({} $) is not equal to amount in financial account ({} $)".format(
+        st.error("Total amount in financial products ({} $) is not equal to amount in this account type ({} $)".format(
                 format(total_fp, ",d"), format(balance, ",d")))
     return d_fp
 
@@ -379,7 +379,7 @@ def check_cons_positive(df, cons_floor = 0):
         st.error("Your income available for spending before retirement is negative: savings or debt payments are too high.")
         st.stop()
     if len(df[df["cons_after"] < cons_floor]):
-        st.error("Your income available for spending in retirement ie negative. This may be due to: 1) your mortgage repayment being too slow (you may try selling your home upon retirement); 2) the value of your imputed rent in retirement being too high (you may try home downsizing at retirement).")
+        st.error("Your income available for spending in retirement is negative. This may be due to: 1) your mortgage repayment being too slow (you may try selling your home upon retirement); 2) the value of your imputed rent in retirement being too high (you may try home downsizing at retirement).")
         st.stop()
 
 def create_data_changes(df):
@@ -413,7 +413,7 @@ def change_mean_returns(mean_returns):
         
 def change_replace_rate_cons():
     st.markdown("# Replacement rates") 
-    st.markdown("The adequacy of retirement incomes is often assessed using “consumption replacement rates”. In the case of income available for spending (i.e. net of taxes, savings and debt payments), thresholds of 80% and 65% have been used in the <div class=tooltip>RSI<span class=tooltiptext>Retirement and Savings Institute</span></div>’s [June 2020 report](https://ire.hec.ca/en/canadians-preparation-retirement-cpr/) report  as well as in previous research and policy literature. Use these thresholds as benchmarks in the results figures?", unsafe_allow_html=True)
+    st.markdown("The adequacy of retirement incomes is often assessed using “consumption replacement rates”. In the case of income available for spending (i.e. net of taxes, savings and debt payments), thresholds of 80% and 65% have been used in the <div class=tooltip>RSI<span class=tooltiptext>Retirement and Savings Institute</span></div>’s [June 2020 report](https://ire.hec.ca/en/canadians-preparation-retirement-cpr/) as well as in previous research and policy literature. Use these thresholds as benchmarks in the results figures?", unsafe_allow_html=True)
     
     keep_rri = st.radio("", ["Yes", "No"], key='keep_rri', index=0)
     if keep_rri == 'No':
@@ -481,7 +481,7 @@ def show_plot_button(df):
 
     with st.beta_expander("HOW TO READ THIS FIGURE"):
         st.markdown("""
-            * This figure shows 25 “realizations”, or possibilities of household income available for spending after retirement, with their mean. “After retirement” is defined as the year when the the last spouse to retire is age 65, or his/her retirement year if later.
+            * This figure shows 25 “realizations”, or possibilities of household income available for spending after retirement, with their average. “After retirement” is defined as the year when the the last spouse to retire is age 65, or his/her retirement year if later.
             * Variations in income available for spending are driven by the stochastic processes for earnings and asset/investment returns.
             * There is no vertical axis to the figure; the vertical differences are artificial and aim to prevent the data points from overlapping excessively.
             """, unsafe_allow_html=True)
@@ -551,7 +551,7 @@ def show_plot_button(df):
     st.plotly_chart(fig)
     with st.beta_expander("HOW TO READ THIS FIGURE"):
         st.markdown("""
-            * This figure shows household income available for spending before retirement and after, for the main realization of the stochastic processes for earnings and asset/investment returns (the deterministic case – which differs from the mean of the 25 stochastic realizations in Figure 1). “Before retirement” is defined as the year when the first spouse to retire is age 55, or the year before he/she retires if earlier — but no sooner than 2020. “After retirement” is defined as the year when the the last spouse to retire is age 65, or his/her retirement year if later.
+            * This figure shows household income available for spending before retirement and after, for the main realization of the stochastic processes for earnings and asset/investment returns (the deterministic case – which differs from the mean of the 25 stochastic realizations in Figure 1). “Before retirement” is defined as the year when the first spouse to retire is age 55, or the year before he/she retires if earlier — but no sooner than 2020. “After retirement” is defined as the year when the last spouse to retire is age 65, or his/her retirement year if later.
             * The two dashed lines show where dots would lie for the two selected “replacement rates”.
             * The other 4 points shown in the figure illustrate the effect of alternative actions for you:
                 * retiring 2 years later than you indicated;
@@ -571,6 +571,8 @@ def show_plot_button(df):
     cpp = hhold['cpp_after']
     gis = hhold['gis_after']
     oas = hhold['oas_after']
+    allow_couple = hhold['allow_couple_after']
+    allow_surv = hhold['allow_surv_after']
     rpp_db = hhold['rpp_db_benefits_after']
     business_dividends = hhold['business_dividends_after']
     
@@ -580,25 +582,30 @@ def show_plot_button(df):
         cpp += hhold['s_cpp_after']
         gis += hhold['s_gis_after']
         oas += hhold['s_oas_after']
+        allow_couple += hhold['s_allow_couple_after']
+        allow_surv += hhold['s_allow_surv_after']
         rpp_db += hhold['s_rpp_db_benefits_after']
         business_dividends += hhold['s_business_dividends_after']
     income = oas + gis + cpp + rpp_db + annuity + pension
 
     label = ['', # 0
-            'OAS', 'GIS', 'CPP/QPP', 'Future pension from DB plan', 'Annuity', 'Current pension', 'Business dividends', # 1 to 7
-            'Income available for spending', 'Imputed rent', 'Debt payments', # 8 - 10
-            'Net tax liability']  # 11 could also enter income (invert source and target)
+            'OAS', 'GIS', 'Allowance', 'Allowance for the Survivor', 'CPP/QPP', 
+            'Future pension from DB plan', 'Annuity', 'Current pension', 'Business dividends', # 1 to 9
+            'Income available for spending', 'Imputed rent', 'Debt payments', # 10 - 12
+            'Net tax liability']  # 13 could also enter income (invert source and target)
 
     if net_liabilities > 0:
-        source = [1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0]
-        target = [0, 0, 0, 0, 0, 0, 0, 8, 9, 10, 11]
-        value =  [oas, gis, cpp, rpp_db, annuity, pension, business_dividends,
-                  consumption, imputed_rent, debt_payments, net_liabilities]
+        source = [1, 2, 3, 4, 5, 6, 7, 8, 9,  0,  0,  0,  0]
+        target = [0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12, 13]
+        value =  [oas, gis, allow_couple, allow_surv, cpp, rpp_db, annuity, 
+                  pension, business_dividends, consumption, imputed_rent,
+                  debt_payments, net_liabilities]
     else:
-        source = [1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 11]
-        target = [0, 0, 0, 0, 0, 0, 0, 8, 9, 10, 0]
-        value =  [oas, gis, cpp, rpp_db, annuity, pension, business_dividends,
-                  consumption, imputed_rent, debt_payments, -net_liabilities]
+        source = [1, 2, 3, 4, 5, 6, 7, 8, 9,  0,  0,  0, 13]
+        target = [0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12,  0]
+        value =  [oas, gis, allow_couple, allow_surv, cpp, rpp_db, annuity,
+                  pension, business_dividends, consumption, imputed_rent,
+                  debt_payments, -net_liabilities]
     
     color_nodes = px.colors.qualitative.Safe[:len(source)]
 
