@@ -67,8 +67,7 @@ def info_spouse(which='first', step_amount=100):
         claim age is set at the retirement age you entered above, but no less than 60&nbsp;y.o. and no more than 70&nbsp;y.o. 
         <div class="tooltip">OAS<span class="tooltiptext">Old Age Security</span></div>
         /
-        <div class="tooltip">GIS<span class="tooltiptext">Guaranteed Income Supplement</span></div>
-        and Allowance benefits begin at 65&nbsp;y.o.
+        <div class="tooltip">GIS<span class="tooltiptext">Guaranteed Income Supplement</span></div> benefits begin at 65 y.o., while Spouse Allowance benefits are paid from 60 to 64&nbsp;y.o. inclusively.
         """, unsafe_allow_html=True)
     st.text("")
 
@@ -83,7 +82,7 @@ def info_spouse(which='first', step_amount=100):
                           key="education_"+which, help="Used to forecast your earnings")
     d['education'] = d_education[degree]
     d['init_wage'] = st.number_input("Annual earnings for 2020 (in $)", min_value=0,
-                                     step=step_amount, key="init_wage_"+which, value=60000)
+                                     step=step_amount, key="init_wage_"+which, value=60000) + 1  # avoid problems with log(0)
 
     pension = st.radio("Did you receive a pension in 2020?", ["Yes", "No"],
                        key="pension_radio_"+which, index=1)
@@ -473,6 +472,7 @@ def show_plot_button(df):
                     xaxis_tickformat=",",
                     xaxis_title=f"<b>Probability of exceeding the selected low and high replacement rates,<br>respectively: {pr_low}% and {pr_high}%</b>",
                     xaxis_title_font_size=14,
+                    xaxis_range=[cons_after.min()-500, cons_after.max()+500],
                     yaxis=dict(range=[0, 2], visible= False, showticklabels=False),
                     font=dict(size=14, color="Black"),
                     legend={'traceorder':'reversed'})
@@ -524,7 +524,10 @@ def show_plot_button(df):
                         text = [f'<b>{names[index]}</b> <br />Replacement rate = {rri:.0f}%'],
                         showlegend = True)
 
-    cons_bef = np.array([min(l_cons_bef), max(l_cons_bef)])
+    # cons_bef = np.array([min(l_cons_bef), max(l_cons_bef)])
+    cons_bef = np.array([min(l_cons_bef) - 1000, 
+                         max(l_cons_bef) + 1000]) # - 1000/+1000 for case min = max
+    
     fig.add_trace(go.Scatter(
         x=cons_bef, y=replace_rate_cons['high'] / 100 * cons_bef,
         mode='lines', name=f"Replacement rate = {replace_rate_cons['high']}%",
@@ -589,7 +592,7 @@ def show_plot_button(df):
     income = oas + gis + cpp + rpp_db + annuity + pension
 
     label = ['', # 0
-            'OAS', 'GIS', 'Allowance', 'Allowance for the Survivor', 'CPP/QPP', 
+            'OAS', 'GIS', 'Spouse Allowance', 'Allowance for the Survivor', 'CPP/QPP', 
             'Future pension from DB plan', 'Annuity', 'Current pension', 'Business dividends', # 1 to 9
             'Income available for spending', 'Imputed rent', 'Debt payments', # 10 - 12
             'Net tax liability']  # 13 could also enter income (invert source and target)
@@ -640,7 +643,8 @@ def show_plot_button(df):
                 * on the left are the various income sources, including the annuity purchased upon retirement with all your financial wealth;
                 * and on the right are the uses of that income.
             * For homeowners who choose to sell their home at retirement, this includes a “rent equivalent”, to account for the fact that no rent had to be paid prior to retirement and make incomes available for spending comparable.
-            * In certain cases, “Net tax liability” will appear as an income source because it is negative – i.e., the household has more credits and deductions than it has taxes to pay.""", unsafe_allow_html=True)
+            * In certain cases, “Net tax liability” will appear as an income source because it is negative – i.e., the household has more credits and deductions than it has taxes to pay.
+            * Spouse Allowance benefits will cease when the recipient turns 65. They will be replaced by similar GIS benefits at that age.""", unsafe_allow_html=True)
         
 # SCRIPT INTERFACE
 
