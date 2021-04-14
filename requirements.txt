@@ -9,7 +9,7 @@ botocore
 certifi
 chardet
 Click
-cpr-rsi
+cpr-rsi >= 1.1.5
 decorator
 docutils
 entrypoints
@@ -38,6 +38,7 @@ PyYAML
 requests
 s3transfer
 six
+srd >= 1.1.4
 streamlit==0.79
 toml
 toolz
