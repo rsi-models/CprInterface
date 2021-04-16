@@ -54,6 +54,11 @@ def info_spouse(which='first', step_amount=100):
     d['sex'] = st.radio("Gender", options=list(d_gender.keys()),
                         format_func=lambda x: d_gender[x], key="sex_"+which, 
                         help="Used to compute life expectancy and the cost of annuities", index=1)
+    if which == 'second':
+        if d['sex'] == 'female':
+            l_pronouns = ['she', 'her']
+        else:
+            l_pronouns = ['he', 'his']  
 
     age = 2020 - d['byear']
     d['ret_age'] = st.number_input("Intended retirement age", min_value=age+1,
@@ -86,7 +91,7 @@ def info_spouse(which='first', step_amount=100):
     if which == 'first':
         text = "Did you receive a pension in 2020?"
     else:
-        text = "Did s/he receive a pension in 2020?"
+        text = f"Did {l_pronouns[0]} receive a pension in 2020?"
     pension = st.radio(text, ["Yes", "No"], key="pension_radio_"+which, index=1)
     if pension == "Yes":
         d['pension'] = st.number_input("Yearly amount of pension (in $)",  min_value=0,
@@ -94,11 +99,11 @@ def info_spouse(which='first', step_amount=100):
     if which == 'first':
         text = "Do you have any savings or plan to save in the future?"
     else:
-        text = "Does s/he have any savings or plans to save in the future?"
+        text = f"Does {l_pronouns[0]} have any savings or plans to save in the future?"
     savings_plan = st.radio(text, ["Yes", "No"], key="savings_plan_"+which, index=1)
     
     if savings_plan == "Yes":
-        d.update(fin_accounts(which=which))
+        d.update(fin_accounts(which=which, l_pronouns=l_pronouns))
     else:
         d_fin_details = {key: 0 for key in ['cap_gains_unreg', 'realized_losses_unreg',
                                              'init_room_rrsp', 'init_room_tfsa']}
@@ -107,7 +112,7 @@ def info_spouse(which='first', step_amount=100):
     if which == 'first':
         text = "Will you receive a defined-benefit (DB) pension from your current or a previous employer?"
     else:
-        text = "Will s/he receive a defined-benefit (DB) pension from her/his current or a previous employer?"
+        text = f"Will {l_pronouns[0]} receive a defined-benefit (DB) pension from {l_pronouns[1]} current or a previous employer?"
     db_pension = st.radio(text, ["Yes", "No"], key="db_pension_"+which, index=1)
     if db_pension == "Yes":
         st.markdown("### DB Pension")
@@ -130,7 +135,7 @@ def info_spouse(which='first', step_amount=100):
     if which == 'first':
         text = "Do you have a defined-contribution (DC) or similar pension plan from your current or a previous employer?"
     else:
-        text = "Does s/he have a defined-contribution (DC) or similar pension plan from her/his current or a previous employer?"    
+        text = f"Does {l_pronouns[0]} have a defined-contribution (DC) or similar pension plan from {l_pronouns[1]} current or a previous employer?"    
     dc_pension = st.radio(text, ["Yes", "No"], key="dc_pension_"+which, index=1)
     if dc_pension == "Yes":
         st.markdown("### DC employer plan")
@@ -292,7 +297,7 @@ def mix_fee(prod_dict):
         
     return d_mix_fee
 
-def fin_accounts(which, step_amount=100):
+def fin_accounts(which, step_amount=100, l_pronouns=None):
     d_fin = {}
     d_fin["bal_unreg"] = 0 #default
     st.markdown("### Savings accounts")
@@ -312,28 +317,26 @@ def fin_accounts(which, step_amount=100):
         st.markdown("### {}".format(short_acc_name))
         
         if which == 'first':
-            text = "Balance of your {} accounts at the end of 2019 (in $)"
+            text = f"Balance of your {short_acc_name} accounts at the end of 2019 (in $)"
         else:
-            text = "Balance of her/his {} accounts at the end of 2019 (in $)"
-        d_fin["bal_" + acc] = st.number_input(text.format(short_acc_name),
-            value=0, min_value=0, step=step_amount, key=f"bal_{acc}_{which}")
+            text = f"Balance of {l_pronouns[1]} {short_acc_name} accounts at the end of 2019 (in $)"
+        d_fin["bal_" + acc] = st.number_input(
+            text, value=0, min_value=0, step=step_amount, key=f"bal_{acc}_{which}")
         
         if which == 'first':
-            text = "Fraction of your earnings you plan to save annually in your {} accounts (in %)"
+            text = f"Fraction of your earnings you plan to save annually in your {short_acc_name} accounts (in %)"
         else:
-            text = "Fraction of her/his earnings s/he plans to save annually in her/his {} accounts (in %)"
+            text = f"Fraction of {l_pronouns[1]} earnings {l_pronouns[0]} plans to save annually in {l_pronouns[1]} {short_acc_name} accounts (in %)"
         d_fin["cont_rate_" + acc] = st.number_input(
-            text.format(short_acc_name), value=0, min_value=0, max_value=100,
-            step=1, key=f"cont_rate_{acc}_{which}") / 100
+            text, value=0, min_value=0, max_value=100, step=1, key=f"cont_rate_{acc}_{which}") / 100
         
         if which == 'first':
-            text = "Amount you plan to withdraw annually from your {} accounts prior to retirement (in $)"
+            text = f"Amount you plan to withdraw annually from your {short_acc_name} accounts prior to retirement (in $)"
         else:
-            text = "Amount s/he plans to withdraw annually from her/his {} accounts prior to retirement (in $)"
+            text = f"Amount {l_pronouns[0]} plans to withdraw annually from her/his {short_acc_name} accounts prior to retirement (in $)"
         
         d_fin["withdrawal_" + acc] = st.number_input(
-            text.format(short_acc_name), value=0, min_value=0, step=step_amount,
-            key=f"withdraw_{acc}_{which}")
+            text, value=0, min_value=0, step=step_amount, key=f"withdraw_{acc}_{which}")
         if acc in ["rrsp", "tfsa"]:
             d_fin["init_room_" + acc] = st.number_input(
                 "{} contribution room at the end of 2019".format(short_acc_name),
@@ -371,7 +374,7 @@ def financial_products(account, balance, which, short_acc_name, step_amount=100)
     if which == 'first':
         label = "Select the financial products you own (total must add up to account balance)"
     else:
-        label = "Select the financial products s/he owns (total must add up to account balance)"
+        label = f"Select the financial products {l_pronouns[0]} owns (total must add up to account balance)"
     fin_prod_select = st.multiselect(label= label, options=fin_prod_list,
                                      key="fin_prod_list_"+ account +"_"+which) #addition
     if not fin_prod_select:
