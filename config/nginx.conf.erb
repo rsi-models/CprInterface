@@ -35,7 +35,6 @@ http {
       listen <%= ENV["PORT"] %>;
       server_name _;
       keepalive_timeout 5;
-      echo $host
 
       location / {
           if ($http_x_forwarded_proto != 'https') {
