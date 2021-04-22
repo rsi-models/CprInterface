@@ -37,7 +37,7 @@ http {
       keepalive_timeout 5;
 
       location / {
-          if ($host ~ .*cpr.*) {
+          if ($http_x_forwarded_proto ~ .*http.*) {
               rewrite ^ https://cpr.hec.ca$request_uri? permanent;
           }
           proxy_pass http://127.0.0.1:8501/;
