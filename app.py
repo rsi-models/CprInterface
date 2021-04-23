@@ -17,7 +17,7 @@ def ask_hh():
     d_hh = info_spouse()
     st.markdown("# Spouse")
     spouse_ques = st.radio("Do you have a spouse?", ["Yes", "No"], index=1)
-    d_hh["couple"] = spouse_ques == "Yes"
+    d_hh["couple"] = (spouse_ques == "Yes")
     if d_hh["couple"]:
         d_hh.update(info_spouse("second"))
 
@@ -84,7 +84,7 @@ def info_spouse(which='first', step_amount=100):
                    "Bachelor's degree": 'university',
                    'University certificate or diploma above bachelor level': 'university'}
     degree = st.selectbox("Education (highest degree obtained)", list(d_education.keys()),
-                          key="education_"+which, help="Used to forecast your earnings")
+                          key="education_"+which, help="Used to forecast earnings")
     d['education'] = d_education[degree]
     d['init_wage'] = st.number_input("Annual earnings for 2020 (in $)", min_value=0,
                                      step=step_amount, key="init_wage_"+which, value=60000) + 1  # avoid problems with log(0)
@@ -103,7 +103,10 @@ def info_spouse(which='first', step_amount=100):
     savings_plan = st.radio(text, ["Yes", "No"], key="savings_plan_"+which, index=1)
     
     if savings_plan == "Yes":
-        d.update(fin_accounts(which=which, l_pronouns=l_pronouns))
+        if which == 'first':
+            d.update(fin_accounts(which=which))
+        else:
+            d.update(fin_accounts(which=which, l_pronouns=l_pronouns))
     else:
         d_fin_details = {key: 0 for key in ['cap_gains_unreg', 'realized_losses_unreg',
                                              'init_room_rrsp', 'init_room_tfsa']}
@@ -118,7 +121,7 @@ def info_spouse(which='first', step_amount=100):
         st.markdown("### DB Pension")
         d['income_previous_db'] = st.number_input(
             "Yearly amount of DB pension from previous employer (in $), once in retirement",
-            min_value=0, step=step_amount, key="income_previous_db_" + which)
+            min_value=0, step=step_amount, key="income_previous_db_"+which)
         d['rate_employee_db'] = st.slider(
             "Employee contribution rate of current DB employer plan (in % of earnings)", min_value=0.0,
             max_value=10.0, step=0.5, key="rate_employee_db_"+which, value=5.0) / 100
@@ -127,9 +130,11 @@ def info_spouse(which='first', step_amount=100):
         age = 2021 - d['byear']
         years_service = st.number_input(
             'Years of service to date contributing to current DB employer plan',
-            min_value=0, max_value=age - 18, key='year_service', value=0,
+            min_value=0, max_value=age - 18, key='year_service_'+which, value=0,
             help="The simulator adds to this number the years of service until your retirement age, assuming you will keep participating in the same plan, and multiplies this by the pension rate below")
-        others['perc_year_db'] = st.slider('Pension rate (in % of earnings per year of service)', min_value=1.0, max_value=3.0, value=2.0, step=0.5, key='perc_year_db') / 100
+        others['perc_year_db'] = st.slider(
+            'Pension rate (in % of earnings per year of service)',
+            min_value=1.0, max_value=3.0, value=2.0, step=0.5, key='perc_year_db_'+which) / 100
         d['replacement_rate_db'] = min((years_service + d['ret_age'] - age) * others['perc_year_db'], 0.70)
     
     if which == 'first':
@@ -343,7 +348,13 @@ def fin_accounts(which, step_amount=100, l_pronouns=None):
                 value=0, min_value=0, step=step_amount, key=f"init_room_{acc}_{which}")
 
         if d_fin["bal_" + acc] > 0:
-            d_fin.update(financial_products(acc, d_fin["bal_" + acc], which, short_acc_name, step_amount=step_amount))
+            if which == 'first':
+                d_fin.update(financial_products(acc, d_fin["bal_" + acc], which,
+                                                short_acc_name, step_amount=step_amount))
+            else:
+                d_fin.update(financial_products(acc, d_fin["bal_" + acc], which,
+                                                short_acc_name, step_amount=step_amount,
+                                                l_pronouns=l_pronouns))
 
     if d_fin["bal_unreg"] > 0:
         st.markdown("### Gains and losses in unregistered Account")
@@ -355,7 +366,8 @@ def fin_accounts(which, step_amount=100, l_pronouns=None):
             value=0, min_value=0, step=step_amount, key="realized_losses_unreg_"+which)
     return d_fin
 
-def financial_products(account, balance, which, short_acc_name, step_amount=100):
+def financial_products(account, balance, which, short_acc_name, step_amount=100,
+                       l_pronouns=None):
     d_fp = {}
     total_fp = 0
     st.markdown("### {} - Financial products".format(short_acc_name))
