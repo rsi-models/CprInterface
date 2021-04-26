@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from PIL import Image
 
-st.set_page_config(layout="wide", page_title='CPR')
+st.set_page_config(page_title='CPR')
 
 # DEFINE FUNCTIONS
 
@@ -722,6 +722,15 @@ others = {'perc_year_db': 0.02}
 
 
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+
+st.markdown(f"""
+    <style>
+        .reportview-container .main .block-container{{
+            max-width: 1280px;
+            padding-top: 0em;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
 
 st.markdown(f"""
     <style>
