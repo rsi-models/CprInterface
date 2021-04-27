@@ -437,7 +437,7 @@ def create_data_changes(df):
 # CHANGES TO PARAMETERS
 
 def change_mean_returns(mean_returns):
-    st.markdown("# Financial assumptions")
+    st.markdown("# Financial&nbsp;assumptions")
     st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) regarding future asset/investment returns?")
     keep_returns = st.radio("", ["Yes", "No"], key='keep_returns', index=0)
     if keep_returns == 'No':
@@ -770,7 +770,7 @@ with logo2:
     gri = Image.open("GRI.png")
     st.image(gri)
 
-st.markdown("<h1 style='text-align: center;font-size: 40px'>Canadians’ Preparation for Retirement (CPR)</h1>", unsafe_allow_html=True)
+st.markdown("<center><h1 style='font-size: 40px'>Canadians’ Preparation for Retirement (CPR)</h1></center>", unsafe_allow_html=True)
 st.text("")
 st.text("")
 col1, col2 = st.beta_columns([0.5, 0.5])
