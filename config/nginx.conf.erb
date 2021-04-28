@@ -36,15 +36,8 @@ http {
       server_name cpr.hec.ca;
       keepalive_timeout 5;
 
-      if ($http_x_forwarded_proto = 'https') {
-         set $test "1";
-      }
-      if ($http_x_forwarded_proto = 'http') {
-         set $test "${test}1";
-      }
-
       location / {
-          if ($test ~* "1") {
+          if ($http_x_forwarded_proto = ('https'|'http')) {
               rewrite ^ https://cpr.hec.ca$request_uri? permanent;
           }
           proxy_pass http://127.0.0.1:8501/;
