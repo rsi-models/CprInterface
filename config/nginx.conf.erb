@@ -33,7 +33,6 @@ http {
 
    server {
       listen <%= ENV["PORT"] %>;
-      listen 443 ssl;
       server_name cprinterface.herokuapp.com;
       return 301 https://cpr.hec.ca$request_uri;
       keepalive_timeout 5;
