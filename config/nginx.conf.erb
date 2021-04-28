@@ -33,11 +33,13 @@ http {
 
    server {
       listen <%= ENV["PORT"] %>;
-      server_name cpr.hec.ca;
+      listen 443 ssl;
+      server_name cprinterface.herokuapp.com;
+      return 301 https://cpr.hec.ca$request_uri;
       keepalive_timeout 5;
 
       location / {
-          if ($request_uri != "") {
+          if ($http_x_forwarded_proto != 'https') {
               rewrite ^ https://cpr.hec.ca$request_uri? permanent;
           }
           proxy_pass http://127.0.0.1:8501/;
