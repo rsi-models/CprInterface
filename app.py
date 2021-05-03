@@ -10,7 +10,8 @@ from PIL import Image
 
 st.set_page_config(page_title='CPR')
 
-# DEFINE FUNCTIONS
+# DEFINE FUNCTIONS USED IN SCRIPT BELOW
+# (functions need to be defined before script)
 
 def ask_hh():
     st.markdown("# Respondent")
@@ -264,7 +265,7 @@ def info_residence(which, step_amount=1000):
     return d_res
 
 def mix_fee(prod_dict):
-    df = pd.read_csv('mix_fee_assets.csv', index_col=0, usecols=range(0, 5))
+    df = pd.read_csv('app_files/mix_fee_assets.csv', index_col=0, usecols=range(0, 5))
     d_investments = {}
     total_sum = sum(prod_dict.values())
     # portfolio for people without current savings (loosely calibrated from PowerCorp's database)
@@ -435,7 +436,6 @@ def create_data_changes(df):
 
 
 # CHANGES TO PARAMETERS
-
 def change_mean_returns(mean_returns):
     st.markdown("# Financial&nbsp;assumptions")
     st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) regarding future asset/investment returns?")
@@ -690,13 +690,10 @@ def show_plot_button(df):
             * In certain cases, “Net tax liability” will appear as an income source because it is negative – i.e., the household has more credits and deductions than it has taxes to pay.
             * Spouse Allowance benefits will cease when the recipient turns 65. They will be replaced by similar GIS benefits at that age.""", unsafe_allow_html=True)
         
-# SCRIPT INTERFACE
-
-# default options
-user_options = {'sell_business': False,
-                'sell_first_resid': False,
-                'sell_second_resid': False,
-                'downsize': 0}
+        
+        ####################       
+# SCRIPT INTERFACE #
+####################
 
 # parameters for 2020 instead of 2018:
 returns = {'ret_equity_2018': 0.0313,
@@ -706,7 +703,7 @@ returns = {'ret_equity_2018': 0.0313,
            'price_rent_2018': 20,
            'ret_business_2018': 0.0313}
 
-# long-term returns
+# long-term returns (can be changed by user)
 mean_returns = {'mu_equity': 0.0688,
                 'mu_bills': 0.0103,
                 'mu_bonds': 0.0253,
@@ -714,12 +711,17 @@ mean_returns = {'mu_equity': 0.0688,
                 'mu_business': 0.0688,
                 'mu_price_rent': 15}
 
-# consumption replacement rates
+# default options (can be changed by user)
+user_options = {'sell_business': False,
+                'sell_first_resid': False,
+                'sell_second_resid': False,
+                'downsize': 0}
+
+# consumption replacement rates (can be changed by user)
 replace_rate_cons = {'high': 80, 'low': 65}
 
-# db pension rate by default
+# db pension rate by default (can be changed by user)
 others = {'perc_year_db': 0.02}
-
 
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
@@ -762,12 +764,13 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
+# load logos
 logo1, _, logo2 = st.beta_columns([0.2, 0.6, 0.2])
 with logo1:
-    rsi = Image.open("RSI.png")
+    rsi = Image.open("app_files/RSI.png")
     st.image(rsi)
 with logo2:
-    gri = Image.open("GRI.png")
+    gri = Image.open("app_files/GRI.png")
     st.image(gri)
 
 st.markdown("<center><h1 style='font-size: 40px'>Canadians’ Preparation for Retirement (CPR)</h1></center>", unsafe_allow_html=True)
