@@ -10,8 +10,31 @@ from PIL import Image
 
 st.set_page_config(page_title='CPR')
 
-# DEFINE FUNCTIONS USED IN SCRIPT BELOW
-# (functions need to be defined before script)
+#########################################
+# DEFINE FUNCTIONS USED IN SCRIPT BELOW #
+# (functions need to be defined         #
+# before script)                        #
+#########################################
+
+# slider to change assets returns
+def change_mean_returns(mean_returns):
+    st.markdown("# Financial&nbsp;assumptions")
+    st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) regarding future asset/investment returns?")
+    keep_returns = st.radio("", ["Yes", "No"], key='keep_returns', index=0)
+    if keep_returns == 'No':
+        st.write("Long-term mean...")
+        for key, val in mean_returns.items():
+            if key != 'mu_price_rent':
+                mean_returns[key] = st.slider(
+                    f'... annual real return on {key[3:]} (in %)',
+                    min_value=0.0, max_value=10.0,
+                    step=1.0, key="long_term_returns_"+key[3:], value=100 * val,
+                    help="Nominal returns are used in the simulator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
+        
+        mean_returns['mu_price_rent'] = st.slider(
+                f'... price-rent ratio', min_value=0.0, max_value=30.0,
+                step=1.0, key="long_term_price_rent",
+                value=float(mean_returns['mu_price_rent']))
 
 def ask_hh():
     st.markdown("# Respondent")
@@ -49,7 +72,8 @@ def ask_hh():
 
 def info_spouse(which='first', step_amount=100):
     d = {}
-    d['byear'] = st.number_input("Birth year", min_value=1957, max_value=2020, key="byear_"+which, value=1980)
+    d['byear'] = st.number_input("Birth year", min_value=1957, max_value=2020,
+                                 key="byear_"+which, value=1980)
         
     d_gender = {'female': 'Female', 'male': 'Male'}
     d['sex'] = st.radio("Gender", options=list(d_gender.keys()),
@@ -159,7 +183,7 @@ def info_spouse(which='first', step_amount=100):
         
     if which == 'second':
         d = {'s_' + k: v for k, v in d.items()}
-    
+
     return d
 
 def info_hh(prod_dict, step_amount=100):
@@ -434,26 +458,7 @@ def create_data_changes(df):
         df_change.s_ret_age += np.array([0, 0, 0, -2, 2])
     return df_change
 
-
-# CHANGES TO PARAMETERS
-def change_mean_returns(mean_returns):
-    st.markdown("# Financial&nbsp;assumptions")
-    st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) regarding future asset/investment returns?")
-    keep_returns = st.radio("", ["Yes", "No"], key='keep_returns', index=0)
-    if keep_returns == 'No':
-        st.write("Long-term mean...")
-        for key, val in mean_returns.items():
-            if key != 'mu_price_rent':
-                mean_returns[key] = st.slider(
-                    f'... annual real return on {key[3:]} (in %)', min_value=0.0, max_value=10.0,
-                    step=1.0, key="long_term_returns_"+key[3:], value=100 * val,
-                    help="Nominal returns are used in the simulator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
-            
-        mean_returns['mu_price_rent'] = st.slider(
-                f'... price-rent ratio', min_value=0.0, max_value=30.0,
-                step=1.0, key="long_term_price_rent",
-                value=float(mean_returns['mu_price_rent']))
-        
+# slider to change replacement rates      
 def change_replace_rate_cons():
     st.markdown("# Replacement rates") 
     st.markdown("The adequacy of retirement incomes is often assessed using “consumption replacement rates”. In the case of income available for spending (i.e. net of taxes, savings and debt payments), thresholds of 80% and 65% have been used in the <div class=tooltip>RSI<span class=tooltiptext>Retirement and Savings Institute</span></div>’s [June 2020 report](https://ire.hec.ca/en/canadians-preparation-retirement-cpr/) as well as in previous research and policy literature. Use these thresholds as benchmarks in the results figures?", unsafe_allow_html=True)
@@ -471,7 +476,9 @@ def change_replace_rate_cons():
             step=1, key="low_replace_rate_cons")
 
 
-# GRAPHS
+###########
+# FIGURES #
+###########
 
 def show_plot_button(df):
     
