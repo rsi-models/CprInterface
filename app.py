@@ -10,7 +10,31 @@ from PIL import Image
 
 st.set_page_config(page_title='CPR')
 
-# DEFINE FUNCTIONS
+#########################################
+# DEFINE FUNCTIONS USED IN SCRIPT BELOW #
+# (functions need to be defined         #
+# before script)                        #
+#########################################
+
+# slider to change assets returns
+def change_mean_returns(mean_returns):
+    st.markdown("# Financial&nbsp;assumptions")
+    st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) regarding future asset/investment returns?")
+    keep_returns = st.radio("", ["Yes", "No"], key='keep_returns', index=0)
+    if keep_returns == 'No':
+        st.write("Long-term mean...")
+        for key, val in mean_returns.items():
+            if key != 'mu_price_rent':
+                mean_returns[key] = st.slider(
+                    f'... annual real return on {key[3:]} (in %)',
+                    min_value=0.0, max_value=10.0,
+                    step=1.0, key="long_term_returns_"+key[3:], value=100 * val,
+                    help="Nominal returns are used in the simulator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
+        
+        mean_returns['mu_price_rent'] = st.slider(
+                f'... price-rent ratio', min_value=0.0, max_value=30.0,
+                step=1.0, key="long_term_price_rent",
+                value=float(mean_returns['mu_price_rent']))
 
 def ask_hh():
     st.markdown("# Respondent")
@@ -48,17 +72,14 @@ def ask_hh():
 
 def info_spouse(which='first', step_amount=100):
     d = {}
-    d['byear'] = st.number_input("Birth year", min_value=1957, max_value=2020, key="byear_"+which, value=1980)
+    d['byear'] = st.number_input("Birth year", min_value=1957, max_value=2020,
+                                 key="byear_"+which, value=1980)
         
     d_gender = {'female': 'Female', 'male': 'Male'}
     d['sex'] = st.radio("Gender", options=list(d_gender.keys()),
                         format_func=lambda x: d_gender[x], key="sex_"+which, 
                         help="Used to compute life expectancy and the cost of annuities", index=1)
-    if which == 'second':
-        if d['sex'] == 'female':
-            l_pronouns = ['she', 'her']
-        else:
-            l_pronouns = ['he', 'his']  
+    female = (d['sex'] == 'female')
 
     age = 2020 - d['byear']
     d['ret_age'] = st.number_input("Intended retirement age", min_value=age+1,
@@ -90,23 +111,32 @@ def info_spouse(which='first', step_amount=100):
                                      step=step_amount, key="init_wage_"+which, value=60000) + 1  # avoid problems with log(0)
     if which == 'first':
         text = "Did you receive a pension in 2020?"
+    elif female:
+        text = f"Did she receive a pension in 2020?"
     else:
-        text = f"Did {l_pronouns[0]} receive a pension in 2020?"
+        text = f"Did he receive a pension in 2020?"
+        
     pension = st.radio(text, ["Yes", "No"], key="pension_radio_"+which, index=1)
     if pension == "Yes":
         d['pension'] = st.number_input("Yearly amount of pension (in $)",  min_value=0,
                                        step=step_amount, key="pension_"+which, value=0)   
     if which == 'first':
         text = "Do you have any savings or plan to save in the future?"
+    elif female:
+        text = f"Does she have any savings or plans to save in the future?"
     else:
-        text = f"Does {l_pronouns[0]} have any savings or plans to save in the future?"
+        text = f"Does he have any savings or plans to save in the future?"
+        
     savings_plan = st.radio(text, ["Yes", "No"], key="savings_plan_"+which, index=1)
     
     if savings_plan == "Yes":
         if which == 'first':
             d.update(fin_accounts(which=which))
+        elif female:
+            d.update(fin_accounts(which=which, female=True))
         else:
-            d.update(fin_accounts(which=which, l_pronouns=l_pronouns))
+            d.update(fin_accounts(which=which, female=False))
+        
     else:
         d_fin_details = {key: 0 for key in ['cap_gains_unreg', 'realized_losses_unreg',
                                              'init_room_rrsp', 'init_room_tfsa']}
@@ -114,8 +144,11 @@ def info_spouse(which='first', step_amount=100):
         
     if which == 'first':
         text = "Will you receive a defined-benefit (DB) pension from your current or a previous employer?"
+    elif female:
+        text = f"Will she receive a defined-benefit (DB) pension from her current or a previous employer?"
     else:
-        text = f"Will {l_pronouns[0]} receive a defined-benefit (DB) pension from {l_pronouns[1]} current or a previous employer?"
+        text = f"Will he receive a defined-benefit (DB) pension from his current or a previous employer?"
+        
     db_pension = st.radio(text, ["Yes", "No"], key="db_pension_"+which, index=1)
     if db_pension == "Yes":
         st.markdown("### DB Pension")
@@ -139,8 +172,11 @@ def info_spouse(which='first', step_amount=100):
     
     if which == 'first':
         text = "Do you have a defined-contribution (DC) or similar pension plan from your current or a previous employer?"
+    elif female:
+        text = "Does she have a defined-contribution (DC) or similar pension plan from her current or a previous employer?"
     else:
-        text = f"Does {l_pronouns[0]} have a defined-contribution (DC) or similar pension plan from {l_pronouns[1]} current or a previous employer?"    
+        text = "Does he have a defined-contribution (DC) or similar pension plan from his current or a previous employer?"
+ 
     dc_pension = st.radio(text, ["Yes", "No"], key="dc_pension_"+which, index=1)
     if dc_pension == "Yes":
         st.markdown("### DC employer plan")
@@ -158,7 +194,7 @@ def info_spouse(which='first', step_amount=100):
         
     if which == 'second':
         d = {'s_' + k: v for k, v in d.items()}
-    
+
     return d
 
 def info_hh(prod_dict, step_amount=100):
@@ -264,7 +300,7 @@ def info_residence(which, step_amount=1000):
     return d_res
 
 def mix_fee(prod_dict):
-    df = pd.read_csv('mix_fee_assets.csv', index_col=0, usecols=range(0, 5))
+    df = pd.read_csv('app_files/mix_fee_assets.csv', index_col=0, usecols=range(0, 5))
     d_investments = {}
     total_sum = sum(prod_dict.values())
     # portfolio for people without current savings (loosely calibrated from PowerCorp's database)
@@ -302,7 +338,7 @@ def mix_fee(prod_dict):
         
     return d_mix_fee
 
-def fin_accounts(which, step_amount=100, l_pronouns=None):
+def fin_accounts(which, step_amount=100, female=None):
     d_fin = {}
     d_fin["bal_unreg"] = 0 #default
     st.markdown("### Savings accounts")
@@ -323,22 +359,30 @@ def fin_accounts(which, step_amount=100, l_pronouns=None):
         
         if which == 'first':
             text = f"Balance of your {short_acc_name} accounts at the end of 2019 (in $)"
+        elif female:
+            text = f"Balance of her {short_acc_name} accounts at the end of 2019 (in $)"
         else:
-            text = f"Balance of {l_pronouns[1]} {short_acc_name} accounts at the end of 2019 (in $)"
+            text = f"Balance of his {short_acc_name} accounts at the end of 2019 (in $)"
+            
         d_fin["bal_" + acc] = st.number_input(
             text, value=0, min_value=0, step=step_amount, key=f"bal_{acc}_{which}")
         
         if which == 'first':
             text = f"Fraction of your earnings you plan to save annually in your {short_acc_name} accounts (in %)"
+        elif female:
+            text = f"Fraction of her earnings she plans to save annually in her {short_acc_name} accounts (in %)"
         else:
-            text = f"Fraction of {l_pronouns[1]} earnings {l_pronouns[0]} plans to save annually in {l_pronouns[1]} {short_acc_name} accounts (in %)"
+            text = f"Fraction of his earnings he plans to save annually in his {short_acc_name} accounts (in %)"
+            
         d_fin["cont_rate_" + acc] = st.number_input(
             text, value=0, min_value=0, max_value=100, step=1, key=f"cont_rate_{acc}_{which}") / 100
         
         if which == 'first':
             text = f"Amount you plan to withdraw annually from your {short_acc_name} accounts prior to retirement (in $)"
+        elif female:
+            text = f"Amount she plans to withdraw annually from her {short_acc_name} accounts prior to retirement (in $)"
         else:
-            text = f"Amount {l_pronouns[0]} plans to withdraw annually from her/his {short_acc_name} accounts prior to retirement (in $)"
+            text = f"Amount he plans to withdraw annually from his {short_acc_name} accounts prior to retirement (in $)"
         
         d_fin["withdrawal_" + acc] = st.number_input(
             text, value=0, min_value=0, step=step_amount, key=f"withdraw_{acc}_{which}")
@@ -351,10 +395,14 @@ def fin_accounts(which, step_amount=100, l_pronouns=None):
             if which == 'first':
                 d_fin.update(financial_products(acc, d_fin["bal_" + acc], which,
                                                 short_acc_name, step_amount=step_amount))
+            elif female:
+                d_fin.update(financial_products(acc, d_fin["bal_" + acc], which,
+                                                short_acc_name, step_amount=step_amount,
+                                                female=True))
             else:
                 d_fin.update(financial_products(acc, d_fin["bal_" + acc], which,
                                                 short_acc_name, step_amount=step_amount,
-                                                l_pronouns=l_pronouns))
+                                                female=False))
 
     if d_fin["bal_unreg"] > 0:
         st.markdown("### Gains and losses in unregistered Account")
@@ -367,7 +415,7 @@ def fin_accounts(which, step_amount=100, l_pronouns=None):
     return d_fin
 
 def financial_products(account, balance, which, short_acc_name, step_amount=100,
-                       l_pronouns=None):
+                       female=None):
     d_fp = {}
     total_fp = 0
     st.markdown("### {} - Financial products".format(short_acc_name))
@@ -385,8 +433,11 @@ def financial_products(account, balance, which, short_acc_name, step_amount=100,
     
     if which == 'first':
         label = "Select the financial products you own (total must add up to account balance)"
+    elif female:
+        label = f"Select the financial products she owns (total must add up to account balance)"
     else:
-        label = f"Select the financial products {l_pronouns[0]} owns (total must add up to account balance)"
+        label = f"Select the financial products he owns (total must add up to account balance)"
+        
     fin_prod_select = st.multiselect(label= label, options=fin_prod_list,
                                      key="fin_prod_list_"+ account +"_"+which) #addition
     if not fin_prod_select:
@@ -433,27 +484,7 @@ def create_data_changes(df):
         df_change.s_ret_age += np.array([0, 0, 0, -2, 2])
     return df_change
 
-
-# CHANGES TO PARAMETERS
-
-def change_mean_returns(mean_returns):
-    st.markdown("# Financial&nbsp;assumptions")
-    st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) regarding future asset/investment returns?")
-    keep_returns = st.radio("", ["Yes", "No"], key='keep_returns', index=0)
-    if keep_returns == 'No':
-        st.write("Long-term mean...")
-        for key, val in mean_returns.items():
-            if key != 'mu_price_rent':
-                mean_returns[key] = st.slider(
-                    f'... annual real return on {key[3:]} (in %)', min_value=0.0, max_value=10.0,
-                    step=1.0, key="long_term_returns_"+key[3:], value=100 * val,
-                    help="Nominal returns are used in the simulator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
-            
-        mean_returns['mu_price_rent'] = st.slider(
-                f'... price-rent ratio', min_value=0.0, max_value=30.0,
-                step=1.0, key="long_term_price_rent",
-                value=float(mean_returns['mu_price_rent']))
-        
+# slider to change replacement rates      
 def change_replace_rate_cons():
     st.markdown("# Replacement rates") 
     st.markdown("The adequacy of retirement incomes is often assessed using “consumption replacement rates”. In the case of income available for spending (i.e. net of taxes, savings and debt payments), thresholds of 80% and 65% have been used in the <div class=tooltip>RSI<span class=tooltiptext>Retirement and Savings Institute</span></div>’s [June 2020 report](https://ire.hec.ca/en/canadians-preparation-retirement-cpr/) as well as in previous research and policy literature. Use these thresholds as benchmarks in the results figures?", unsafe_allow_html=True)
@@ -471,7 +502,9 @@ def change_replace_rate_cons():
             step=1, key="low_replace_rate_cons")
 
 
-# GRAPHS
+###########
+# FIGURES #
+###########
 
 def show_plot_button(df):
     
@@ -690,13 +723,10 @@ def show_plot_button(df):
             * In certain cases, “Net tax liability” will appear as an income source because it is negative – i.e., the household has more credits and deductions than it has taxes to pay.
             * Spouse Allowance benefits will cease when the recipient turns 65. They will be replaced by similar GIS benefits at that age.""", unsafe_allow_html=True)
         
-# SCRIPT INTERFACE
-
-# default options
-user_options = {'sell_business': False,
-                'sell_first_resid': False,
-                'sell_second_resid': False,
-                'downsize': 0}
+        
+        ####################       
+# SCRIPT INTERFACE #
+####################
 
 # parameters for 2020 instead of 2018:
 returns = {'ret_equity_2018': 0.0313,
@@ -706,7 +736,7 @@ returns = {'ret_equity_2018': 0.0313,
            'price_rent_2018': 20,
            'ret_business_2018': 0.0313}
 
-# long-term returns
+# long-term returns (can be changed by user)
 mean_returns = {'mu_equity': 0.0688,
                 'mu_bills': 0.0103,
                 'mu_bonds': 0.0253,
@@ -714,12 +744,17 @@ mean_returns = {'mu_equity': 0.0688,
                 'mu_business': 0.0688,
                 'mu_price_rent': 15}
 
-# consumption replacement rates
+# default options (can be changed by user)
+user_options = {'sell_business': False,
+                'sell_first_resid': False,
+                'sell_second_resid': False,
+                'downsize': 0}
+
+# consumption replacement rates (can be changed by user)
 replace_rate_cons = {'high': 80, 'low': 65}
 
-# db pension rate by default
+# db pension rate by default (can be changed by user)
 others = {'perc_year_db': 0.02}
-
 
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
@@ -762,12 +797,13 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
+# load logos
 logo1, _, logo2 = st.beta_columns([0.2, 0.6, 0.2])
 with logo1:
-    rsi = Image.open("RSI.png")
+    rsi = Image.open("app_files/RSI.png")
     st.image(rsi)
 with logo2:
-    gri = Image.open("GRI.png")
+    gri = Image.open("app_files/GRI.png")
     st.image(gri)
 
 st.markdown("<center><h1 style='font-size: 40px'>Canadians’ Preparation for Retirement (CPR)</h1></center>", unsafe_allow_html=True)
