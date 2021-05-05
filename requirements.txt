@@ -2,6 +2,7 @@ altair
 argh
 astor
 attrs
+awesome-streamlit
 base58
 blinker
 boto3
