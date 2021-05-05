@@ -508,7 +508,7 @@ def change_replace_rate_cons():
 
 def show_plot_button(df):
     
-    # stochastic results
+    # STOCHASTIC RESULTS
     nsim = 25
     results = main.run_simulations(df, nsim=nsim, n_jobs=1, non_stochastic=False,
                                    base_year=2020, **others,
@@ -517,11 +517,11 @@ def show_plot_button(df):
     check_cons_positive(df_output, cons_floor = 0)
     df_output['RRI'] = (df_output.cons_after / df_output.cons_bef * 100).round(1)
     
-    
     # prob prepared:
     pr_low = int(np.round(100 * (df_output['RRI'] >= replace_rate_cons['low']).mean(), 0))
     pr_high = int(np.round(100 * (df_output['RRI'] >= replace_rate_cons['high']).mean(), 0))
 
+    # FIGURE 1: STOCHASTIC RESULTS
     fig = go.Figure()
     cons_after = df_output.cons_after
     noise = 0.2
@@ -563,7 +563,8 @@ def show_plot_button(df):
             * There is no vertical axis to the figure; the vertical differences are artificial and aim to prevent the data points from overlapping excessively.
             """, unsafe_allow_html=True)
 
-    # create data with changes in contribution rate rrsp and retirement age
+    # CHANGES IN CONTRIBUTION RATE AND RETIREMENT AGE
+    # calculations
     df_change = create_data_changes(df)
     results = main.run_simulations(df_change, nsim=1, n_jobs=1,non_stochastic=True,
                                    base_year=2020, **others,
@@ -572,7 +573,7 @@ def show_plot_button(df):
     df_change = results.df_merged
     age_respondent = df_change['year_cons_bef'][0] - d_hh['byear']
     
-    # graph changes in contribution rate rrsp and retirement age
+    # FIGURE 2: CHANGES IN CONTRIBUTION RATE RRSP AND RETIREMENT AGE
     
     names = ['Main scenario', 'RRSP contrib +5%', 'RRSP contrib +10%',
              'Retirement age -2 years', 'Retirement age +2 years']
@@ -639,7 +640,7 @@ def show_plot_button(df):
                 * contributing to an <div class="tooltip">RRSP<span class="tooltiptext">Registered Retirement Savings Plans</span></div> 5% more of your earnings than you indicated;
                 * contributing to an <div class="tooltip">RRSP<span class="tooltiptext">Registered Retirement Savings Plans</span></div> 10% more of your earnings than you indicated.""", unsafe_allow_html=True)
 
-    # Income decomposition
+    # RETIREMENT INCOME DISTRIBUTION
     # prepare data
     hhold = df_change.loc[0, :]
     pension = hhold['pension_after']
@@ -689,7 +690,7 @@ def show_plot_button(df):
     
     color_nodes = px.colors.qualitative.Safe[:len(source)]
 
-    # data to dict, dict to sankey
+    # data to dict, dict to sankey diagram
     link = dict(source = source,
                 target = target,
                 value = value,
