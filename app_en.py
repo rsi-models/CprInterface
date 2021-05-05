@@ -8,12 +8,12 @@ import plotly.graph_objects as go
 import plotly.express as px
 from PIL import Image
 
-#########################################
-# DEFINE FUNCTIONS USED IN SCRIPT BELOW #
-# (functions need to be defined         #
-# before script)                        #
-#########################################
 def write():
+    #########################################
+    # DEFINE FUNCTIONS USED IN SCRIPT BELOW #
+    # (functions need to be defined         #
+    # before script)                        #
+    #########################################
     # slider to change assets returns
     def change_mean_returns(mean_returns):
         st.markdown("# Financial&nbsp;assumptions")
@@ -25,8 +25,8 @@ def write():
                 if key != 'mu_price_rent':
                     mean_returns[key] = st.slider(
                         f'... annual real return on {key[3:]} (in %)',
-                        min_value=0.0, max_value=10.0,
-                        step=1.0, key="long_term_returns_"+key[3:], value=100 * val,
+                        min_value=0.0, max_value=10.0, step=1.0,
+                        key="long_term_returns_"+key[3:], value=100 * val,
                         help="Nominal returns are used in the simulator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
             
             mean_returns['mu_price_rent'] = st.slider(
@@ -38,13 +38,13 @@ def write():
         st.markdown("# Respondent")
         d_hh = info_spouse()
         st.markdown("# Spouse")
-        spouse_ques = st.radio("Do you have a spouse?", ["Yes", "No"], index=1)
-        d_hh["couple"] = (spouse_ques == "Yes")
+        spouse = st.radio("Do you have a spouse?", ["Yes", "No"], index=1)
+        d_hh["couple"] = (spouse == "Yes")
         if d_hh["couple"]:
             d_hh.update(info_spouse("second"))
 
         fin_accs = ["rrsp", "tfsa", "other_reg", "unreg"]
-        fin_prods = ["crsa", "hipsa", "mf", "stocks", "bonds", "gic", "cvplp", "isf", "etf"]
+        fin_prods = ["checking", "premium", "mutual", "stocks", "bonds", "gic", "etf"]
         fin_list = []
         for i in fin_accs:
             for j in fin_prods:
@@ -312,14 +312,12 @@ def write():
             d_mix_fee["fee"] = 0.015
             
         else:
-            d_investments["Checking or regular savings account"] = prod_dict["crsa"]/total_sum
-            d_investments["High interest/premium savings account"] = prod_dict["hipsa"]/total_sum
-            d_investments["Mutual funds"] = prod_dict["mf"]/total_sum
+            d_investments["Checking or regular savings account"] = prod_dict["checking"]/total_sum
+            d_investments["High interest/premium savings account"] = prod_dict["premium"]/total_sum
+            d_investments["Mutual funds"] = prod_dict["mutual"]/total_sum
             d_investments["Stocks"] = prod_dict["stocks"]/total_sum
             d_investments["Bonds"] = prod_dict["bonds"]/total_sum
             d_investments["GICs"] = prod_dict["gic"]/total_sum
-            d_investments["Cash value of permanent life policy"] = prod_dict["cvplp"]/total_sum
-            d_investments["Individual segregated funds"] = prod_dict["isf"]/total_sum
             d_investments["ETFs"] = prod_dict["etf"]/total_sum
             d_mix_fee = {key: 0 for key in df.columns}
             df['fraction'] = pd.Series(d_investments)
@@ -415,20 +413,20 @@ def write():
 
     def financial_products(account, balance, which, short_acc_name, step_amount=100,
                            female=None):
-        d_fp = {}
+        d_fin_prod = {}
         total_fp = 0
         st.markdown("### {} - Financial products".format(short_acc_name))
-        fin_prods = ["crsa", "hipsa", "mf", "stocks", "bonds", "gic", "cvplp", "isf", "etf"]
-        fin_prods_dict = {"crsa": "Checking or regular savings account",
-                          "hipsa": "High interest/premium savings account",
-                          "mf": "Mutual funds",
+        fin_prods = ["checking", "premium", "mutual", "stocks", "bonds", "gic",
+                     "etf"]
+        fin_prods_dict = {"checking": "Checking or regular savings account",
+                          "premium": "High interest/premium savings account",
+                          "mutual": "Mutual funds",
                           "stocks": "Stocks",
                           "bonds": "Bonds",
                           "gic": "GICs",
                           "etf": "ETFs"}
-
-        fin_prods_rev = {v: k for k, v in fin_prods_dict.items()} #addition
-        fin_prod_list = list(fin_prods_rev.keys()) #addition
+        fin_prods_rev = {v: k for k, v in fin_prods_dict.items()}
+        fin_prod_list = list(fin_prods_rev.keys())
         
         if which == 'first':
             label = "Select the financial products you own (total must add up to account balance)"
@@ -438,26 +436,27 @@ def write():
             label = f"Select the financial products he owns (total must add up to account balance)"
             
         fin_prod_select = st.multiselect(label= label, options=fin_prod_list,
-                                         key="fin_prod_list_"+ account +"_"+which) #addition
+                                         key="fin_prod_list_"+ account +"_"+which)
         if not fin_prod_select:
             st.error("No financial product selected. IF NO PRODUCTS ARE SELECTED, a default allocation will be implemented for this account type.")
-        fin_prods = [fin_prods_rev[i] for i in fin_prod_select] #addition
-        for i in fin_prods:
-            d_fp[account+"_"+i] = st.number_input(fin_prods_dict[i], value=0, min_value=0, max_value=balance,
-                                                  step=step_amount, key=account+"_"+i+"_"+which)
-            total_fp += d_fp[account+"_"+i]
+        fin_prods = [fin_prods_rev[i] for i in fin_prod_select]
+        for prod in fin_prods:
+            d_fin_prod[account+"_"+prod] = st.number_input(
+                fin_prods_dict[prod], value=0, min_value=0, max_value=balance,
+                step=step_amount, key=account+"_"+prod+"_"+which)
+            total_fp += d_fin_prod[account+"_"+prod]
 
         if total_fp != balance and len(fin_prod_select)!=0:
             st.error("Total amount in financial products ({} $) is not equal to amount in this account type ({} $)".format(
                     format(total_fp, ",d"), format(balance, ",d")))
-        return d_fp
+        return d_fin_prod
 
     def create_dataframe(d_hh):
         l_p = ['byear', 'sex', 'ret_age', 'education', 'init_wage', 'pension', 'bal_rrsp', 'bal_tfsa', 'bal_other_reg', 'bal_unreg',
-                'cont_rate_rrsp', 'cont_rate_tfsa', 'cont_rate_other_reg', 'cont_rate_unreg', 'withdrawal_rrsp', 'withdrawal_tfsa',
-                'withdrawal_other_reg', 'withdrawal_unreg', 'replacement_rate_db',
-                'rate_employee_db', 'income_previous_db', 'init_dc', 'rate_employee_dc', 'rate_employer_dc', 'claim_age_cpp',
-                'cap_gains_unreg', 'realized_losses_unreg', 'init_room_rrsp', 'init_room_tfsa']
+               'cont_rate_rrsp', 'cont_rate_tfsa', 'cont_rate_other_reg', 'cont_rate_unreg', 'withdrawal_rrsp', 'withdrawal_tfsa',
+               'withdrawal_other_reg', 'withdrawal_unreg', 'replacement_rate_db',
+               'rate_employee_db', 'income_previous_db', 'init_dc', 'rate_employee_dc', 'rate_employer_dc', 'claim_age_cpp',
+               'cap_gains_unreg', 'realized_losses_unreg', 'init_room_rrsp', 'init_room_tfsa']
         l_sp = ['s_' + var for var in l_p]
         l_hh = ['weight', 'couple', 'prov', 'first_residence', 'second_residence', 'price_first_residence', 'price_second_residence', 
                 'business', 'price_business', 'mix_bonds', 'mix_bills', 'mix_equity', 'fee', 'fee_equity', 'credit_card', 
@@ -573,10 +572,10 @@ def write():
         age_respondent = df_change['year_cons_bef'][0] - d_hh['byear']
         
         # FIGURE 2: CHANGES IN CONTRIBUTION RATE RRSP AND RETIREMENT AGE
-        
         names = ['Main scenario', 'RRSP contrib +5%', 'RRSP contrib +10%',
                  'Retirement age -2 years', 'Retirement age +2 years']
-        init_cons_bef, init_cons_after = df_change.loc[0, ['cons_bef', 'cons_after']].values.squeeze().tolist()
+        init_cons_bef, init_cons_after = \
+            df_change.loc[0, ['cons_bef', 'cons_after']].values.squeeze().tolist()
 
         fig = go.Figure()
 
@@ -601,7 +600,6 @@ def write():
                             text = [f'<b>{names[index]}</b> <br />Replacement rate = {rri:.0f}%'],
                             showlegend = True)
 
-        # cons_bef = np.array([min(l_cons_bef), max(l_cons_bef)])
         cons_bef = np.array([min(l_cons_bef) - 1000, 
                              max(l_cons_bef) + 1000]) # - 1000/+1000 for case min = max
         
@@ -643,7 +641,8 @@ def write():
         # prepare data
         hhold = df_change.loc[0, :]
         pension = hhold['pension_after']
-        annuity = hhold['annuity_rrsp_after'] + hhold['annuity_rpp_dc_after'] + hhold['annuity_non_rrsp_after']
+        annuity = (hhold['annuity_rrsp_after'] + hhold['annuity_rpp_dc_after'] 
+                   + hhold['annuity_non_rrsp_after'])
         consumption = hhold['cons_after']
         debt_payments = hhold['debt_payments_after']
         imputed_rent = hhold['imputed_rent_after']
@@ -658,7 +657,9 @@ def write():
         
         if hhold['couple']:
             pension += hhold['s_pension_after']
-            annuity += hhold['s_annuity_rrsp_after'] + hhold['s_annuity_rpp_dc_after'] + hhold['s_annuity_non_rrsp_after']
+            annuity += (hhold['s_annuity_rrsp_after']
+                        + hhold['s_annuity_rpp_dc_after']
+                        + hhold['s_annuity_non_rrsp_after'])
             cpp += hhold['s_cpp_after']
             gis += hhold['s_gis_after']
             oas += hhold['s_oas_after']
@@ -724,7 +725,7 @@ def write():
                 * Spouse Allowance benefits will cease when the recipient turns 65. They will be replaced by similar GIS benefits at that age.""", unsafe_allow_html=True)
             
             
-            ####################       
+    ####################       
     # SCRIPT INTERFACE #
     ####################
 
