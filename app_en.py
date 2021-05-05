@@ -262,7 +262,13 @@ def write():
 
     def info_residence(which, step_amount=1000):
         d_res = {}
-        res = "the " + which + " residence"
+        d_res[f'{which}_mortgage'] = st.number_input(
+            "Outstanding mortgage at the end of 2019 (in $)", min_value=0,
+            step=step_amount, key="res_mortgage_"+which)
+        d_res[f'{which}_mortgage_payment'] = st.number_input(
+            "Monthly payment on mortgage in 2020 (in $)", min_value=0,
+            step=step_amount, key="res_mortgage_payment_"+which)
+        
         sell = st.radio("Do you plan to sell it upon retirement?", ["Yes", "No"],
                         key=which+"_sell", index=1)
         if sell == "Yes":
@@ -289,12 +295,7 @@ def write():
             else:
                 d_res[f'price_{which}_residence'] = 0
 
-        d_res[f'{which}_mortgage'] = st.number_input(
-            "Outstanding mortgage at the end of 2019 (in $)", min_value=0, step=step_amount,
-            key="res_mortgage_"+which)
-        d_res[f'{which}_mortgage_payment'] = st.number_input(
-            "Monthly payment on mortgage in 2020 (in $)", min_value=0, step=step_amount,
-            key="res_mortgage_payment_"+which)
+
         return d_res
 
     def mix_fee(prod_dict):
