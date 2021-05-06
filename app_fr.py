@@ -24,7 +24,7 @@ def write():
                              'mu_housing': "l'immobilier",
                              'mu_business': "les entreprises détenues en propre"}
         st.markdown("# Hypothèses&nbsp;financières")
-        st.markdown("Utilisers les [hypothèses par défaut](XXX ajouter lien) concernant les rendements futurs sur les actifs / placements?")
+        st.markdown("Utilisers les [hypothèses par défaut](https://ire.hec.ca/wp-content/uploads/2021/05/assumptions-fr.pdf) concernant les rendements futurs sur les actifs / placements?")
         keep_returns = st.radio("", ["Oui", "Non"], key='keep_returns', index=0)
         if keep_returns == 'Non':
             st.write("Moyenne à long terme...")
@@ -44,8 +44,8 @@ def write():
     def ask_hh():
         st.markdown("# Répondant")
         d_hh = info_spouse()
-        st.markdown("# Conjoint(e)")
-        spouse = st.radio("Avez-vous un(e)conjoint(e)?", ["Oui", "Non"], index=1)
+        st.markdown("# Conjoint.e")
+        spouse = st.radio("Avez-vous un.e conjoint.e?", ["Oui", "Non"], index=1)
         d_hh["couple"] = (spouse == "Oui")
         if d_hh["couple"]:
             d_hh.update(info_spouse("second"))
@@ -344,10 +344,10 @@ def write():
         d_fin = {}
         d_fin["bal_unreg"] = 0 #default
         st.markdown("### Comptes d'épargne")
-        d_accounts = {'rrsp': ['comnptes REER', "Régime enregistré d'épargne-retraite (REER)"],
-                      'tfsa': ['comptes CELI', "Compte d'épargne libre d'impôt (CELI)"],
+        d_accounts = {'rrsp': ['REER', "Régime enregistré d'épargne-retraite (REER)"],
+                      'tfsa': ['CELI', "Compte d'épargne libre d'impôt (CELI)"],
                       'other_reg':['Autres comptes enregistrés', "Autres comptes enregistrés"],
-                      'unreg': ['Comptes non-enregitrés', "Comptes non-enregitrés"]}
+                      'unreg': ['Comptes non-enregistrés', "Comptes non-enregistrés"]}
         # d_accounts_inv = {v: k for k, v in d_accounts.items()}
         saving_plan_select = st.multiselect(
             label="Sélectionner un ou plusieurs type(s) de compte",
@@ -490,7 +490,7 @@ def write():
     def change_replace_rate_cons():
         st.markdown("# Taux de remplacement") 
         st.markdown("""
-            Le caractère adéquat du revenu à la retraite est souvent évalué en termes de « taux de remplacement de la consommation ». Dans le cas du revenu disponible pour les dépenses (c.-à-d. net des impôts, épargnes et paiement des dettes), des seuils de 80% et 65% ont été utilisés dans le [rapport de juin 2020](https://ire.hec.ca/preparation-retraite-canadiens/) produit par l’<div class=tooltip>IRE<span class=tooltiptext>Institut sur la retraite et l’épargne</span></div>, ainsi que dans des recherches et des études de politiques antérieures. Utiliser ces seuils comme références dans les figures de résultats?
+            Le caractère adéquat du revenu à la retraite est souvent évalué en termes de «&nbsp;taux de remplacement de la consommation&nbsp;». Dans le cas du revenu disponible pour les dépenses (c.-à-d. net des impôts, épargnes et paiement des dettes), des seuils de 80% et 65% ont été utilisés dans le [rapport de juin 2020](https://ire.hec.ca/preparation-retraite-canadiens/) produit par l’<div class=tooltip>IRE<span class=tooltiptext>Institut sur la retraite et l’épargne</span></div>, ainsi que dans des recherches et des études de politiques antérieures. Utiliser ces seuils comme références dans les figures de résultats?
             """, unsafe_allow_html=True)
         
         keep_rri = st.radio("", ["Oui", "Non"], key='keep_rri', index=0)
@@ -789,7 +789,7 @@ def write():
     with col2:
         with st.beta_expander("Fonctionnement de l'outil", expanded=True):
             st.markdown("""
-                En utilisant de nombreux processus et hypothèses [résumés ici](XXXX add link hypothèses) et [présentés graphiquement ici](https://ire.hec.ca/wp-content/uploads/2021/04/CPR_flow5-fr.pdf), le CPR projette dans le futur la situation financière d’un ménage, jusqu’à un âge de retraite prédéterminé pour chaque individu. À cet âge, il convertit tout le patrimoine financier (et si désiré les résidences et entreprises) en une rente viagère « actuariellement juste », à l’aide des tables de mortalité les plus récentes et des taux projetés sur les obligations. L’outil calcule le revenu disponible pour les dépenses – après paiement des dettes, épargne, impôts, et logement pour les propriétaires – *avant* et *après* la retraite, en dollars de 2020 (réels). Il fournit ensuite de l’information au sujet de la situation financière du ménage après la retraite à l’aide de figures et de probabilités.
+                En utilisant de nombreux processus et hypothèses [résumés ici](https://ire.hec.ca/wp-content/uploads/2021/05/assumptions-fr.pdf) et [présentés graphiquement ici](https://ire.hec.ca/wp-content/uploads/2021/04/CPR_flow5-fr.pdf), le CPR projette dans le futur la situation financière d’un ménage, jusqu’à un âge de retraite prédéterminé pour chaque individu. À cet âge, il convertit tout le patrimoine financier (et si désiré les résidences et entreprises) en une rente viagère « actuariellement juste », à l’aide des tables de mortalité les plus récentes et des taux projetés sur les obligations. L’outil calcule le revenu disponible pour les dépenses – après paiement des dettes, épargne, impôts, et logement pour les propriétaires – *avant* et *après* la retraite, en dollars de 2020 (réels). Il fournit ensuite de l’information au sujet de la situation financière du ménage après la retraite à l’aide de figures et de probabilités.
                 """, unsafe_allow_html=True)
 
     st.sidebar.markdown("# CONDITIONS D'UTILISATION")
