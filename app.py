@@ -53,7 +53,7 @@ PAGES = {
 }
 
 def main():
-	st.sidebar.markdown("# Select Language")
+	st.sidebar.markdown("# Language / Langue")
 	selection = st.sidebar.radio(" ", list(PAGES.keys()))
 
 	page = PAGES[selection]

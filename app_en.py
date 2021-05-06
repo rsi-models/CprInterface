@@ -17,7 +17,7 @@ def write():
     # slider to change assets returns
     def change_mean_returns(mean_returns):
         st.markdown("# Financial&nbsp;assumptions")
-        st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) regarding future asset/investment returns?")
+        st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/05/assumptions.pdf) regarding future asset/investment returns?")
         keep_returns = st.radio("", ["Yes", "No"], key='keep_returns', index=0)
         if keep_returns == 'No':
             st.write("Long-term mean...")
@@ -250,7 +250,7 @@ def write():
             "Outstanding balance at the end of 2019 (in $)", min_value=0,
             step=step_amount, key="debt_"+debt_dict[i])
             d_debts[debt + "_payment"] = st.number_input(
-                "Monthly payment (in $)", min_value=0, step=step_amount,
+                "Average monthly payment in 2020 (in $)", min_value=0, step=step_amount,
                 key="debt_payment_"+debt_dict[i])
             
         for key in l_debts: #addition
@@ -266,7 +266,7 @@ def write():
             "Outstanding mortgage at the end of 2019 (in $)", min_value=0,
             step=step_amount, key="res_mortgage_"+which)
         d_res[f'{which}_mortgage_payment'] = st.number_input(
-            "Monthly payment on mortgage in 2020 (in $)", min_value=0,
+            "Average monthly payment on mortgage in 2020 (in $)", min_value=0,
             step=step_amount, key="res_mortgage_payment_"+which)
         
         sell = st.radio("Do you plan to sell it upon retirement?", ["Yes", "No"],
@@ -779,7 +779,7 @@ def write():
         with st.beta_expander("Functioning of the tool", expanded=True):
             st.markdown("""
                 The <div class="tooltip">CPR<span class="tooltiptext">Canadians' Preparation for Retirement</span></div>
-                projects a household’s financial situation into the future to a pre-specified age of retirement for each individual, using a number of processes and assumptions [summarized here](https://ire.hec.ca/wp-content/uploads/2021/03/assumptions.pdf) and [graphically depicted here](https://ire.hec.ca/wp-content/uploads/2021/03/CPR_flow5.pdf). At that age, it converts all financial wealth (and optionally residences and businesses) into an “actuarially fair” annuity, using the most recent life tables as well as projected bond rates. The tool computes income available for spending – after debt payments, saving, taxes, and housing for homeowners – *prior to* and *after* retirement, in 2020 (real) dollars. 
+                projects a household’s financial situation into the future to a pre-specified age of retirement for each individual, using a number of processes and assumptions [summarized here](https://ire.hec.ca/wp-content/uploads/2021/05/assumptions.pdf) and [graphically depicted here](https://ire.hec.ca/wp-content/uploads/2021/03/CPR_flow5.pdf). At that age, it converts all financial wealth (and optionally residences and businesses) into an “actuarially fair” annuity, using the most recent life tables as well as projected bond rates. The tool computes income available for spending – after debt payments, saving, taxes, and housing for homeowners – *prior to* and *after* retirement, in 2020 (real) dollars. 
                 It returns, in the form of figures and probabilities, information about the household’s post-retirement financial situation.
                 """, unsafe_allow_html=True)
 
