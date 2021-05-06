@@ -250,7 +250,7 @@ def write():
             "Outstanding balance at the end of 2019 (in $)", min_value=0,
             step=step_amount, key="debt_"+debt_dict[i])
             d_debts[debt + "_payment"] = st.number_input(
-                "Monthly payment (in $)", min_value=0, step=step_amount,
+                "Average monthly payment in 2020 (in $)", min_value=0, step=step_amount,
                 key="debt_payment_"+debt_dict[i])
             
         for key in l_debts: #addition
@@ -266,7 +266,7 @@ def write():
             "Outstanding mortgage at the end of 2019 (in $)", min_value=0,
             step=step_amount, key="res_mortgage_"+which)
         d_res[f'{which}_mortgage_payment'] = st.number_input(
-            "Monthly payment on mortgage in 2020 (in $)", min_value=0,
+            "Average monthly payment on mortgage in 2020 (in $)", min_value=0,
             step=step_amount, key="res_mortgage_payment_"+which)
         
         sell = st.radio("Do you plan to sell it upon retirement?", ["Yes", "No"],
