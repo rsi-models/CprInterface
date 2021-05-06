@@ -6,6 +6,7 @@ st.set_page_config(page_title='CPR')
 import app_en
 import app_fr
 
+
 st.markdown(f"""
     <style>
         .reportview-container .main .block-container{{
