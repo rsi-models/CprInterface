@@ -26,13 +26,19 @@ def write():
         keep_returns = st.radio("", ["Yes", "No"], key='keep_returns', index=0)
         if keep_returns == 'No':
             st.write("Long-term mean...")
-            for key, val in mean_returns.items():
-                if key != 'mu_price_rent':
-                    mean_returns[key] = st.slider(
-                        f'... annual real return on {name_returns[key]} (in %)',
+            
+            key, val = 'mu_business', mean_returns['mu_business']
+            mean_returns[key] = st.slider(
+                        f"... annual real return on {name_returns[key]} (in %)",
                         min_value=0.0, max_value=10.0, step=1.0,
                         key="long_term_returns_"+key[3:], value=100 * val,
                         help="Nominal returns are used in the calculator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
+            for key, val in mean_returns.items():
+                if key not in ['mu_equity', 'mu_price_rent']:
+                    mean_returns[key] = st.slider(
+                        f'... annual real return on {name_returns[key]} (in %)',
+                        min_value=0.0, max_value=10.0, step=1.0,
+                        key="long_term_returns_"+key[3:], value=100 * val) / 100.0
             
             mean_returns['mu_price_rent'] = st.slider(
                     f'... price-rent ratio', min_value=0.0, max_value=30.0,
