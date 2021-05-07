@@ -16,6 +16,11 @@ def write():
     #########################################
     # slider to change assets returns
     def change_mean_returns(mean_returns):
+        name_returns = {'mu_equity': 'equity',
+                        'mu_bills': 'bills',
+                        'mu_bonds': 'bonds',
+                        'mu_housing': "housing",
+                        'mu_business': "own business"}
         st.markdown("# Financial&nbsp;assumptions")
         st.markdown("Use [default assumptions](https://ire.hec.ca/wp-content/uploads/2021/05/assumptions.pdf) regarding future asset/investment returns?")
         keep_returns = st.radio("", ["Yes", "No"], key='keep_returns', index=0)
@@ -24,10 +29,10 @@ def write():
             for key, val in mean_returns.items():
                 if key != 'mu_price_rent':
                     mean_returns[key] = st.slider(
-                        f'... annual real return on {key[3:]} (in %)',
+                        f'... annual real return on {name_returns[key]} (in %)',
                         min_value=0.0, max_value=10.0, step=1.0,
                         key="long_term_returns_"+key[3:], value=100 * val,
-                        help="Nominal returns are used in the simulator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
+                        help="Nominal returns are used in the calculator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
             
             mean_returns['mu_price_rent'] = st.slider(
                     f'... price-rent ratio', min_value=0.0, max_value=30.0,
@@ -102,7 +107,8 @@ def write():
                        'University certificate or diploma below bachelor level': 'university',
                        "Bachelor's degree": 'university',
                        'University certificate or diploma above bachelor level': 'university'}
-        degree = st.selectbox("Education (highest degree obtained)", list(d_education.keys()),
+        degree = st.selectbox(label="Education (highest degree obtained)",
+                              options=list(d_education.keys()),
                               key="education_"+which, help="Used to forecast earnings")
         d['education'] = d_education[degree]
         d['init_wage'] = st.number_input("Annual earnings for 2020 (in $)", min_value=0,
@@ -162,7 +168,7 @@ def write():
             years_service = st.number_input(
                 'Years of service to date contributing to current DB employer plan',
                 min_value=0, max_value=age - 18, key='year_service_'+which, value=0,
-                help="The simulator adds to this number the years of service until your retirement age, assuming you will keep participating in the same plan, and multiplies this by the pension rate below")
+                help="The calculator adds to this number the years of service until your intended retirement age, assuming you will keep participating in the same plan, and multiplies this by the pension rate below")
             others['perc_year_db'] = st.slider(
                 'Pension rate (in % of earnings per year of service)',
                 min_value=1.0, max_value=3.0, value=2.0, step=0.5, key='perc_year_db_'+which) / 100
@@ -346,7 +352,8 @@ def write():
         # d_accounts_inv = {v: k for k, v in d_accounts.items()}
         saving_plan_select = st.multiselect(
             label="Select one or more account type(s)", options= [v[1] for v in d_accounts.values()],
-            key="fin_acc_"+which)
+            key="fin_acc_"+which, 
+            help="* RRSPs include group RRSPs, Voluntary Retirement Savings Plans (VRSPs) and Pooled Registered Pension Plans (PRPPs). \n* Examples of other registered accounts include Locked-in Retirement Accounts (LIRAs) or the locked-in portion of a previous group RRSP.")
         selected_saving_plans = [key for key, val in d_accounts.items()
                                  if val[1] in saving_plan_select]
         
@@ -385,7 +392,7 @@ def write():
                 text, value=0, min_value=0, step=step_amount, key=f"withdraw_{acc}_{which}")
             if acc in ["rrsp", "tfsa"]:
                 d_fin["init_room_" + acc] = st.number_input(
-                    "{} contribution room at the end of 2019".format(short_acc_name),
+                    "{} contribution room at the end of 2019 (in $)".format(short_acc_name),
                     value=0, min_value=0, step=step_amount, key=f"init_room_{acc}_{which}")
 
             if d_fin["bal_" + acc] > 0:
@@ -423,17 +430,17 @@ def write():
                           "mutual": "Mutual funds",
                           "stocks": "Stocks",
                           "bonds": "Bonds",
-                          "gic": "GICs",
-                          "etf": "ETFs"}
+                          "gic": "Guaranteed Income Certificates (GICs)",
+                          "etf": "Exchange-Traded Funds (ETFs)"}
         fin_prods_rev = {v: k for k, v in fin_prods_dict.items()}
         fin_prod_list = list(fin_prods_rev.keys())
         
         if which == 'first':
-            label = "Select the financial products you own (total must add up to account balance)"
+            label = "Select the financial products you owned at the end of 2019 (total must add up to account balance)"
         elif female:
-            label = f"Select the financial products she owns (total must add up to account balance)"
+            label = f"Select the financial products she owned at the end of 2019 (total must add up to account balance)"
         else:
-            label = f"Select the financial products he owns (total must add up to account balance)"
+            label = f"Select the financial products he owned at the end of 2019 (total must add up to account balance)"
             
         fin_prod_select = st.multiselect(label= label, options=fin_prod_list,
                                          key="fin_prod_list_"+ account +"_"+which)
@@ -722,7 +729,7 @@ def write():
                     * and on the right are the uses of that income.
                 * For homeowners who choose to sell their home at retirement, this includes a “rent equivalent”, to account for the fact that no rent had to be paid prior to retirement and make incomes available for spending comparable.
                 * In certain cases, “Net tax liability” will appear as an income source because it is negative – i.e., the household has more credits and deductions than it has taxes to pay.
-                * Spouse Allowance benefits will cease when the recipient turns 65. They will be replaced by similar GIS benefits at that age.""", unsafe_allow_html=True)
+                * Spouse Allowance benefits will cease when the recipient turns 65. They will be replaced by similar OAS and GIS benefits at that age.""", unsafe_allow_html=True)
             
             
     ####################       
@@ -773,7 +780,7 @@ def write():
     col1, col2 = st.beta_columns([0.5, 0.5])
     with col1:
         with st.beta_expander("Use of the tool", expanded=True):
-            st.markdown("Welcome to the individual online interface of [the CPR simulator](https://ire.hec.ca/en/canadians-preparation-retirement-cpr), [a freely available Python package](https://rsi-models.github.io/CPR/en/) also available for download for batch use. This tool is intended for use by individuals born in 1957 or later and not yet retired. To use the tool, fill in the fields and hit “Show figures” at the bottom of the page. *The information you enter will not be stored. Il will be transmitted securely and for calculations only. The CPR calculator will not have access to any personal information.*")
+            st.markdown("Welcome to the individual online interface of [the CPR calculator](https://ire.hec.ca/en/canadians-preparation-retirement-cpr), [a freely available Python package](https://rsi-models.github.io/CPR/en/) also available for download for batch use. This tool is intended for use by individuals born in 1957 or later and not yet retired. To use the tool, fill in the fields and hit “Show figures” at the bottom of the page. *The information you enter will not be stored. Il will be transmitted securely and for calculations only. The CPR calculator will not have access to any personal information.*")
 
     with col2:
         with st.beta_expander("Functioning of the tool", expanded=True):

@@ -19,12 +19,12 @@ def write():
     # slider to change assets returns
     def change_mean_returns(mean_returns):
         translate_returns = {'mu_equity': 'les actions',
-                             'mu_bills': 'les obligations à court terme',
-                             'mu_bonds': 'les obligations à long terme',
+                             'mu_bills': 'les obligations à court terme (bills)',
+                             'mu_bonds': 'les obligations à long terme (bonds)',
                              'mu_housing': "l'immobilier",
                              'mu_business': "les entreprises détenues en propre"}
         st.markdown("# Hypothèses&nbsp;financières")
-        st.markdown("Utilisers les [hypothèses par défaut](https://ire.hec.ca/wp-content/uploads/2021/05/assumptions-fr.pdf) concernant les rendements futurs sur les actifs / placements?")
+        st.markdown("Utiliser les [hypothèses par défaut](https://ire.hec.ca/wp-content/uploads/2021/05/assumptions-fr.pdf) concernant les rendements futurs sur les actifs / placements?")
         keep_returns = st.radio("", ["Oui", "Non"], key='keep_returns', index=0)
         if keep_returns == 'Non':
             st.write("Moyenne à long terme...")
@@ -34,10 +34,10 @@ def write():
                         f'... du rendement annuel réel sur {translate_returns[key]} (en %)',
                         min_value=0.0, max_value=10.0, step=1.0,
                         key="long_term_returns_"+key[3:], value=100 * val,
-                        help="Nominal returns are used in the simulator for taxation purposes. We assume a 2% annual future inflation rate.") / 100.0
+                        help="Des rendements nominaux sont utilisés dans le calculateur aux fins de taxation. Nous postulons un taux d'inflation annuel futur de 2%.") / 100.0
             
             mean_returns['mu_price_rent'] = st.slider(
-                    f'... du ratio prix-loyer', min_value=0.0, max_value=30.0,
+                    f'... du ratio prix-loyers', min_value=0.0, max_value=30.0,
                     step=1.0, key="long_term_price_rent",
                     value=float(mean_returns['mu_price_rent']))
 
@@ -82,7 +82,7 @@ def write():
             key="byear_"+which, value=1980)
             
         d_gender = {'female': 'Femme', 'male': 'Homme'}
-        d['sex'] = st.radio("Gender", options=list(d_gender.keys()),
+        d['sex'] = st.radio("Sexe", options=list(d_gender.keys()),
                             format_func=lambda x: d_gender[x], key="sex_"+which, 
                             help="Utilisé pour calculer l’espérance de vie et le coût des rentes", index=1)
         female = (d['sex'] == 'female')
@@ -144,9 +144,9 @@ def write():
         if which == 'first':
             text = "Recevrez-vous une pension d’un régime à prestations déterminées (PD) de votre employeur actuel ou d’un employeur passé?"
         elif female:
-            text = f"Will she receive a defined-benefit (DB) pension from her current or a previous employer?"
+            text = f"Votre conjointe recevra-t-elle une pension d’un régime à prestations déterminées (PD) de son employeur actuel ou d’un employeur passé? "
         else:
-            text = f"Will he receive a defined-benefit (DB) pension from his current or a previous employer?"
+            text = f"Votre conjoint recevra-t-il une pension d’un régime à prestations déterminées (PD) de son employeur actuel ou d’un employeur passé? "
             
         db_pension = st.radio(text, ["Oui", "Non"], key="db_pension_"+which, index=1)
         if db_pension == "Oui":
@@ -163,7 +163,7 @@ def write():
             years_service = st.number_input(
                 'Années de service à ce jour avec cotisation au régime d’employeur PD actuel',
                 min_value=0, max_value=age - 18, key='year_service_'+which, value=0,
-                help="Le simulateur ajoute à ce nombre les années de service jusqu’à votre âge de retraite, en présumant que vous continuerez à participer au même régime; puis multiplie le total par le taux de pension ci-dessous")
+                help="Le calculateur ajoute à ce nombre les années de service jusqu’à l’âge de retraite prévu, en présumant que la personne continuera à participer au même régime; puis multiplie le total par le taux de pension ci-dessous")
             others['perc_year_db'] = st.slider(
                 'Taux de pension (en % du revenu de travail par année de service)',
                 min_value=1.0, max_value=3.0, value=2.0, step=0.5, key='perc_year_db_'+which) / 100
@@ -178,7 +178,7 @@ def write():
      
         dc_pension = st.radio(text, ["Oui", "Non"], key="dc_pension_"+which, index=1)
         if dc_pension == "Oui":
-            st.markdown("### Régime d'employer CD")
+            st.markdown("### Régime d'employeur CD")
             d['init_dc'] = st.number_input(
                 "Solde total à la fin de 2019 (en $)", min_value=0,
                 step=step_amount, value=0, key="init_dc_" + which)
@@ -204,8 +204,9 @@ def write():
                                         format_func=lambda x: d_prov[x], key="prov")
         d_others.update(mix_fee(prod_dict))
         st.markdown("### Résidence")
-        for which in ['principale', 'secondaire']:
-            which_str = f"Possédez-vous une résidence {which}?"
+        translate_which = {'first': 'principale', 'second':'secondaire'}
+        for which in ['first', 'second']:
+            which_str = f"Possédez-vous une résidence {translate_which[which]}?"
             res = st.radio(which_str, ["Oui", "Non"], key=which, index=1)
             if res == "Oui":
                 d_others.update(info_residence(which))
@@ -274,29 +275,31 @@ def write():
             "Paiement hypothécaire mensuel en 2020 (en $)", min_value=0,
             step=step_amount, key="res_mortgage_payment_"+which)
         
-        sell = st.radio("Do you plan to sell it upon retirement?", ["Oui", "Non"],
+        sell = st.radio("Prévoyez-vous la vendre au moment de la retraite?",
+                        ["Oui", "Non"],
                         key=which+"_sell", index=1)
         if sell == "Oui":
             user_options[f'sell_{which}_resid'] = True
             d_res[f'{which}_residence'] = st.number_input(
-                "Value at the end of 2019 (in $)", min_value=0,
+                "Valeur à la fin de 2019 (en $)", min_value=0,
                 step=step_amount, key="res_value_"+which)
         else:
             d_res[f'{which}_residence'] = 0
 
         if which == 'first':
-            if sell == 'Yes':
-                downsize= st.radio("Do you plan to downsize upon retirement?", ["Oui", "Non"],
+            if sell == 'Oui':
+                downsize= st.radio("Prévoyez-vous réduire la taille de votre habitation au moment de la retraite?",
+                                   ["Oui", "Non"],
                         key=which+"_sell", index=1)
-                if downsize == 'Yes':
+                if downsize == 'Oui':
                     user_options['downsize'] = st.number_input(
-                        "By what percentage (in value) do you plan to downsize?", value=0, min_value=0,
+                        "De quel pourcentage (en valeur)?", value=0, min_value=0,
                         max_value=100, step=1, key="downsizing") / 100
             d_res[f'price_{which}_residence'] = d_res[f'{which}_residence']  # doesn't matter since cap gain not taxed
         else:
             if sell == "Oui":
                 d_res[f'price_{which}_residence'] = st.number_input(
-                    "Buying price (in $)", min_value=0, step=step_amount, key="res_buy_"+which)
+                    "Prix d’achat (en $)", min_value=0, step=step_amount, key="res_buy_"+which)
             else:
                 d_res[f'price_{which}_residence'] = 0
 
@@ -351,7 +354,8 @@ def write():
         # d_accounts_inv = {v: k for k, v in d_accounts.items()}
         saving_plan_select = st.multiselect(
             label="Sélectionner un ou plusieurs type(s) de compte",
-            options= [v[1] for v in d_accounts.values()], key="fin_acc_"+which)
+            options= [v[1] for v in d_accounts.values()], key="fin_acc_"+which,
+            help="* Les REER incluent les REER collectifs ou d’employeur, les Régimes volontaires d’épargne-retraite (RVER) et les Régimes de pension agréés  collectifs (RPAC).\n* Les autres comptes enregistrés comprennent p.ex. les comptes de retraite immobilisés (CRI) ou la portion immobilisée d’un ancien REER collectif.")
         selected_saving_plans = [key for key, val in d_accounts.items()
                                  if val[1] in saving_plan_select]
         
@@ -424,21 +428,21 @@ def write():
         fin_prods = ["checking", "premium", "mutual", "stocks", "bonds", "gic",
                      "etf"]
         fin_prods_dict = {"checking": "Compte chèques ou compte d'épargne régulier",
-                          "premium": "Compte épargne à intérêt élevé",
-                          "mutual": "Fonds mutuels",
+                          "premium": "Compte d'épargne à intérêt élevé",
+                          "mutual": "Fonds communs de placement",
                           "stocks": "Actions",
                           "bonds": "Obligations",
-                          "gic": "Certificats de placement garanti",
-                          "etf": "Fonds négociés en bourse"}
+                          "gic": "Certificats de placement garantis (CPG)",
+                          "etf": "Fonds négociés en Bourse (FNB)"}
         fin_prods_rev = {v: k for k, v in fin_prods_dict.items()}
         fin_prod_list = list(fin_prods_rev.keys())
         
         if which == 'first':
-            label = "Sélectionner les produits financiers que vous possédez (le total doit être égal au solde du compte)"
+            label = "Sélectionner les produits financiers que vous déteniez à la fin de 2019 (le total doit être égal au solde du compte)"
         elif female:
-            label = f"Sélectionner les produits financiers que votre conjointe possède (le total doit être égal au solde du compte)"
+            label = f"Sélectionner les produits financiers que votre conjointe détenait à la fin de 2019 (le total doit être égal au solde du compte)"
         else:
-            label = f"Sélectionner les produits financiers que votre conjoint possède (le total doit être égal au solde du compte)"
+            label = f"Sélectionner les produits financiers que votre conjoint détenait à la fin de 2019 (le total doit être égal au solde du compte)"
             
         fin_prod_select = st.multiselect(label= label, options=fin_prod_list,
                                          key="fin_prod_list_"+ account +"_"+which)
@@ -778,13 +782,13 @@ def write():
         gri = Image.open("app_files/GRI.png")
         st.image(gri)
 
-    st.markdown("<center><h1 style='font-size: 40px'>Préparation des Canadiens pour la retraite (CPR)</h1></center>", unsafe_allow_html=True)
+    st.markdown("<center><h1 style='font-size: 40px'>Préparation à la retraite des Canadiens (CPR)</h1></center>", unsafe_allow_html=True)
     st.text("")
     st.text("")
     col1, col2 = st.beta_columns([0.5, 0.5])
     with col1:
         with st.beta_expander("Utilisation de l'outil", expanded=True):
-            st.markdown("Bienvenue dans l’interface individuelle en ligne du [simulateur CPR](https://ire.hec.ca/preparation-retraite-canadiens/), un package Python disponible en ligne gratuitement pour une utilisation en lot. Cet outil s’adresse aux individus non-retraités nés en 1957 ou après. Pour utiliser l’outil, remplir les champs et cliquer sur « Voir les figures » au bas de la page. *L’information entrée ne sera pas conservée. Elle sera transmise de façon sécuritaire à des fins de calcul uniquement. Le calculateur CPR n’aura accès à aucune information personnelle.*")
+            st.markdown("Bienvenue dans l’interface individuelle en ligne du [calculateur CPR](https://ire.hec.ca/preparation-retraite-canadiens/), un package Python disponible en ligne gratuitement pour une utilisation en lot (pour plusieurs ménages à la fois). Cet outil s’adresse aux individus non-retraités nés en 1957 ou après. Pour utiliser l’outil, remplir les champs et cliquer sur « Montrer les figures » au bas de la page. *L’information entrée ne sera pas conservée. Elle sera transmise de façon sécuritaire à des fins de calcul uniquement. Le calculateur CPR n’aura accès à aucune information personnelle.*")
 
     with col2:
         with st.beta_expander("Fonctionnement de l'outil", expanded=True):
