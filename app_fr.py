@@ -783,9 +783,9 @@ def write():
     logo1, _, logo2 = st.beta_columns([0.2, 0.6, 0.2])
     with logo1:
         rsi = Image.open("app_files/IRE.png")
-        st.image(rsi)
+        st.image(rsi)   
     with logo2:
-        gri = Image.open("app_files/GRI.png")
+        gri = Image.open("app_files/GRI_fr.png")
         st.image(gri)
 
     st.markdown("<center><h1 style='font-size: 40px'>Préparation à la retraite des Canadiens (CPR)</h1></center>", unsafe_allow_html=True)
