@@ -48,13 +48,10 @@ st.markdown(f"""
 
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
-PAGES = {
-	"English": app_en,
-	"Français": app_fr,
-}
+PAGES = {"Français": app_fr, "English": app_en}
 
 def main():
-	st.sidebar.markdown("# Language / Langue")
+	st.sidebar.markdown("# Langue / Language")
 	selection = st.sidebar.radio(" ", list(PAGES.keys()))
 
 	page = PAGES[selection]
