@@ -115,37 +115,18 @@ def write():
         d['education'] = d_education[degree]
         d['init_wage'] = st.number_input(
             "Revenus de travail pour 2020 (en $)", min_value=0, step=step_amount, key="init_wage_"+which, value=60000) + 1  # avoid problems with log(0)
+        
+        st.markdown("## Régimes de retraite")
+        
         if which == 'first':
             text = "Avez-vous reçu une pension en 2020?"
         elif female:
             text = f"Votre conjointe a-t-elle reçu une pension en 2020?"
         else:
             text = f"Votre conjoint a-t-il reçu une pension en 2020?"
-            
         pension = st.radio(text, ["Oui", "Non"], key="pension_radio_"+which, index=1)
         if pension == "Oui":
-            d['pension'] = st.number_input("Montant annuel de la pension (en $)",  min_value=0, step=step_amount, key="pension_"+which, value=0)   
-        if which == 'first':
-            text = "Avez-vous des épargnes ou prévoyez-vous épargner à l’avenir?"
-        elif female:
-            text = f"Votre conjointe a-t-elle des épargnes ou prévoit-elle épargner à l’avenir?"
-        else:
-            text = f"Votre conjoint a-t-il des épargnes ou prévoit-il épargner à l’avenir?"
-            
-        savings_plan = st.radio(text, ["Oui", "Non"], key="savings_plan_"+which, index=1)
-        
-        if savings_plan == "Oui":
-            if which == 'first':
-                d.update(fin_accounts(which=which))
-            elif female:
-                d.update(fin_accounts(which=which, female=True))
-            else:
-                d.update(fin_accounts(which=which, female=False))
-            
-        else:
-            d_fin_details = {key: 0 for key in ['cap_gains_unreg', 'realized_losses_unreg',
-                                                'init_room_rrsp', 'init_room_tfsa']}
-            d.update(d_fin_details)
+            d['pension'] = st.number_input("Montant annuel de la pension (en $)",  min_value=0, step=step_amount, key="pension_"+which, value=0)           
             
         if which == 'first':
             text = "Recevrez-vous une pension d’un régime à prestations déterminées (PD) de votre employeur actuel ou d’un employeur passé?"
@@ -153,7 +134,6 @@ def write():
             text = f"Votre conjointe recevra-t-elle une pension d’un régime à prestations déterminées (PD) de son employeur actuel ou d’un employeur passé? "
         else:
             text = f"Votre conjoint recevra-t-il une pension d’un régime à prestations déterminées (PD) de son employeur actuel ou d’un employeur passé? "
-            
         db_pension = st.radio(text, ["Oui", "Non"], key="db_pension_"+which, index=1)
         if db_pension == "Oui":
             st.markdown("### Pension d'un régime PD")
@@ -181,7 +161,6 @@ def write():
             text = "Votre conjointe a-t-elle un régime à cotisations déterminées (CD) ou semblable avec son employeur actuel ou un employeur passé?"
         else:
             text = "Votre conjoint a-t-il un régime à cotisations déterminées (CD) ou semblable avec son employeur actuel ou un employeur passé?"
-     
         dc_pension = st.radio(text, ["Oui", "Non"], key="dc_pension_"+which, index=1)
         if dc_pension == "Oui":
             st.markdown("### Régime d'employeur CD")
@@ -195,7 +174,31 @@ def write():
                 "Taux de cotisation d’employeur du régime d’employeur CD actuel (en % du revenu de travail)",
                 min_value=0.0, max_value=20.0, step=0.5, key="rate_employer_dc_"+which, value=5.0) / 100
             if d['rate_employee_dc'] + d['rate_employer_dc'] > 0.18:
-                st.warning("**Warning:** Tax legislation caps the combined employee-employer contribution rate at 18% of earnings")
+                st.warning("**Attention:** la législation fiscale plafonne le taux de cotisation combiné employé-employeur à 18% du revenu")
+                
+        st.markdown("## Épargnes")
+        
+        if which == 'first':
+            text = "Avez-vous des épargnes ou prévoyez-vous épargner à l’avenir?"
+        elif female:
+            text = f"Votre conjointe a-t-elle des épargnes ou prévoit-elle épargner à l’avenir?"
+        else:
+            text = f"Votre conjoint a-t-il des épargnes ou prévoit-il épargner à l’avenir?"        
+        savings_plan = st.radio(text, ["Oui", "Non"], key="savings_plan_"+which, index=1)
+        
+        if savings_plan == "Oui":
+            if which == 'first':
+                d.update(fin_accounts(which=which))
+            elif female:
+                d.update(fin_accounts(which=which, female=True))
+            else:
+                d.update(fin_accounts(which=which, female=False))
+        else:
+            d_fin_details = {key: 0 for key in ['cap_gains_unreg', 'realized_losses_unreg',
+                                                'init_room_rrsp', 'init_room_tfsa']}
+            d.update(d_fin_details)        
+        
+               
             
         if which == 'second':
             d = {'s_' + k: v for k, v in d.items()}
@@ -209,7 +212,7 @@ def write():
                                         options=list(d_prov.keys()),
                                         format_func=lambda x: d_prov[x], key="prov")
         d_others.update(mix_fee(prod_dict))
-        st.markdown("### Résidence")
+        st.markdown("## Résidence")
         translate_which = {'first': 'principale', 'second':'secondaire'}
         for which in ['first', 'second']:
             which_str = f"Possédez-vous une résidence {translate_which[which]}?"
@@ -217,7 +220,7 @@ def write():
             if res == "Oui":
                 d_others.update(info_residence(which))
 
-        st.markdown("### Entreprise")
+        st.markdown("## Entreprise")
         business = st.radio("Possédez-vous une entreprise?", ["Oui", "Non"],
                             key="business", index=1)
         if business == "Oui":
@@ -234,7 +237,7 @@ def write():
                     "Prix d’achat de l’entreprise (en $)", min_value=0,
                     step=step_amount, key="business_price")
 
-        st.markdown("### Dettes non-hypothécaires")
+        st.markdown("## Dettes non-hypothécaires")
         mortgage = st.radio("Avez-vous des dettes autres qu’hypothécaires?",
                             ["Oui", "Non"], key="mortgage", index=1)
         if mortgage == "Oui":
@@ -367,7 +370,7 @@ def write():
         
         for acc in selected_saving_plans:
             short_acc_name = d_accounts[acc][0]
-            st.markdown("### {}".format(short_acc_name))
+            st.markdown("#### {}".format(short_acc_name))
             
             if which == 'first':
                 text = f"Solde de vos {short_acc_name} à la fin de 2019 (en $)"
@@ -415,14 +418,13 @@ def write():
                     d_fin.update(financial_products(acc, d_fin["bal_" + acc], which,
                                                     short_acc_name, step_amount=step_amount,
                                                     female=False))
-
         if d_fin["bal_unreg"] > 0:
-            st.markdown("### Gains and losses in unregistered Account")
+            st.markdown("#### Gains et pertes dans Comptes non-enregistrés")
             d_fin['cap_gains_unreg'] = st.number_input(
-                "Balance of unrealized capital gains as of January 1, 2020 (in $)",
+                "Solde de gains en capitaux non réalisés au premier janvier 2020 (en $)",
                 value=0, min_value=0, step=step_amount, key="cap_gains_unreg_"+which)
             d_fin['realized_losses_unreg'] = st.number_input(
-                "Realized losses in capital on unregistered account as of January 1, 2020 (in $)",
+                "Pertes en capital réalisées dans des Comptes non-enregistrés au premier janvier 2020 (en $)",
                 value=0, min_value=0, step=step_amount, key="realized_losses_unreg_"+which)
         return d_fin
 
@@ -430,7 +432,7 @@ def write():
                            female=None):
         d_fin_prod = {}
         total_fp = 0
-        st.markdown(f"### {short_acc_name} - Produits financiers")
+        st.markdown(f"#### {short_acc_name} - Produits financiers")
         fin_prods = ["checking", "premium", "mutual", "stocks", "bonds", "gic",
                      "etf"]
         fin_prods_dict = {"checking": "Compte chèques ou compte d'épargne régulier",

@@ -119,6 +119,8 @@ def write():
         d['education'] = d_education[degree]
         d['init_wage'] = st.number_input("Annual earnings for 2020 (in $)", min_value=0,
                                          step=step_amount, key="init_wage_"+which, value=60000) + 1  # avoid problems with log(0)
+        st.markdown("## Pensions plans")
+        
         if which == 'first':
             text = "Did you receive a pension in 2020?"
         elif female:
@@ -130,22 +132,6 @@ def write():
         if pension == "Yes":
             d['pension'] = st.number_input("Yearly amount of pension (in $)",  min_value=0,
                                            step=step_amount, key="pension_"+which, value=0)   
-        if which == 'first':
-            text = "Do you have any savings or plan to save in the future?"
-        elif female:
-            text = f"Does she have any savings or plans to save in the future?"
-        else:
-            text = f"Does he have any savings or plans to save in the future?"
-            
-        savings_plan = st.radio(text, ["Yes", "No"], key="savings_plan_"+which, index=1)
-        
-        if savings_plan == "Yes":
-            if which == 'first':
-                d.update(fin_accounts(which=which))
-            elif female:
-                d.update(fin_accounts(which=which, female=True))
-            else:
-                d.update(fin_accounts(which=which, female=False))
             
         else:
             d_fin_details = {key: 0 for key in ['cap_gains_unreg', 'realized_losses_unreg',
@@ -201,6 +187,24 @@ def write():
                 min_value=0.0, max_value=20.0, step=0.5, key="rate_employer_dc_"+which, value=5.0) / 100
             if d['rate_employee_dc'] + d['rate_employer_dc'] > 0.18:
                 st.warning("**Warning:** Tax legislation caps the combined employee-employer contribution rate at 18% of earnings")
+        
+        st.markdown("## Savings")
+        
+        if which == 'first':
+            text = "Do you have any savings or plan to save in the future?"
+        elif female:
+            text = f"Does she have any savings or plans to save in the future?"
+        else:
+            text = f"Does he have any savings or plans to save in the future?"
+        savings_plan = st.radio(text, ["Yes", "No"], key="savings_plan_"+which, index=1)
+        
+        if savings_plan == "Yes":
+            if which == 'first':
+                d.update(fin_accounts(which=which))
+            elif female:
+                d.update(fin_accounts(which=which, female=True))
+            else:
+                d.update(fin_accounts(which=which, female=False))
             
         if which == 'second':
             d = {'s_' + k: v for k, v in d.items()}
@@ -365,7 +369,7 @@ def write():
         
         for acc in selected_saving_plans:
             short_acc_name = d_accounts[acc][0]
-            st.markdown("### {}".format(short_acc_name))
+            st.markdown("#### {}".format(short_acc_name))
             
             if which == 'first':
                 text = f"Balance of your {short_acc_name} accounts at the end of 2019 (in $)"
@@ -415,12 +419,12 @@ def write():
                                                     female=False))
 
         if d_fin["bal_unreg"] > 0:
-            st.markdown("### Gains and losses in unregistered Account")
+            st.markdown("#### Gains and losses in Unregistered account")
             d_fin['cap_gains_unreg'] = st.number_input(
                 "Balance of unrealized capital gains as of January 1, 2020 (in $)",
                 value=0, min_value=0, step=step_amount, key="cap_gains_unreg_"+which)
             d_fin['realized_losses_unreg'] = st.number_input(
-                "Realized losses in capital on unregistered account as of January 1, 2020 (in $)",
+                "Realized losses in capital in Unregistered account as of January 1, 2020 (in $)",
                 value=0, min_value=0, step=step_amount, key="realized_losses_unreg_"+which)
         return d_fin
 
@@ -428,7 +432,7 @@ def write():
                            female=None):
         d_fin_prod = {}
         total_fp = 0
-        st.markdown("### {} - Financial products".format(short_acc_name))
+        st.markdown("#### {} - Financial products".format(short_acc_name))
         fin_prods = ["checking", "premium", "mutual", "stocks", "bonds", "gic",
                      "etf"]
         fin_prods_dict = {"checking": "Checking or regular savings account",
