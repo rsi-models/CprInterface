@@ -51,13 +51,14 @@ st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', uns
 PAGES = {"Français": app_fr, "English": app_en}
 
 def main():
-	st.sidebar.markdown("# Langue / Language")
-	selection = st.sidebar.radio(" ", list(PAGES.keys()))
+    st.sidebar.markdown("# Langue / Language")
+    selection = st.sidebar.radio(" ", list(PAGES.keys()))
+    page = PAGES[selection]
 
-	page = PAGES[selection]
-
-	with st.spinner(f"Loading {selection}..."):
-		ast.shared.components.write_page(page)
+    load_msg = {"English": "Please wait...",
+                "Français": "Veuillez patienter..."}
+    with st.spinner(load_msg[selection]):
+        ast.shared.components.write_page(page)
 
 if __name__ == "__main__":
 	main()
