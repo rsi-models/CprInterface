@@ -790,7 +790,7 @@ def write():
     col1, col2 = st.beta_columns([0.5, 0.5])
     with col1:
         with st.beta_expander("Use of the tool", expanded=True):
-            st.markdown("Welcome to the individual online interface of [the CPR calculator](https://ire.hec.ca/en/canadians-preparation-retirement-cpr), [a freely available Python package](https://rsi-models.github.io/CPR/en/) also available for download for batch use. This tool is intended for use by individuals born in 1957 or later and not yet retired. To use the tool, fill in the fields and hit “Show figures” at the bottom of the page. *The information you enter will not be stored. Il will be transmitted securely and for calculations only. The CPR calculator will not have access to any personal information.*")
+            st.markdown("Welcome to the individual online interface of [the CPR calculator](https://ire.hec.ca/en/canadians-preparation-retirement-cpr), [a freely available Python package](https://rsi-models.github.io/CPR/en/) also available for download for batch use. This tool is intended for use by individuals born in 1957 or later and not yet retired. To use the tool, fill in the fields and hit “Show figures” at the bottom of the page. *The information you enter will not be stored. It will be transmitted securely and for calculations only. The CPR calculator will not have access to any personal information.*")
 
     with col2:
         with st.beta_expander("Functioning of the tool", expanded=True):

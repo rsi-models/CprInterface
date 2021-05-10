@@ -46,6 +46,8 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
+st.markdown("<style>.gtext {font-size: 2vmin}</style>", unsafe_allow_html=True)
+
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
 PAGES = {"Français": app_fr, "English": app_en}
