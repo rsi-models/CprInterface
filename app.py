@@ -1,7 +1,7 @@
 import streamlit as st
 import awesome_streamlit as ast
 
-st.set_page_config(page_title='CPR')
+st.set_page_config(page_title="CPR", initial_sidebar_state="expanded")
 
 import app_en
 import app_fr
@@ -45,6 +45,11 @@ st.markdown(f"""
         }}
     </style>
     """, unsafe_allow_html=True)
+
+st.markdown("""
+    <style>
+        #MainMenu {visibility: hidden;}
+    </style>""", unsafe_allow_html=True)
 
 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
