@@ -46,6 +46,7 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
+# hide the hamburger button top-right of the screen
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}

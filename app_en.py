@@ -383,29 +383,29 @@ def write():
             d_fin["bal_" + acc] = st.number_input(
                 text, value=0, min_value=0, step=step_amount, key=f"bal_{acc}_{which}")
             
-            if which == 'first':
-                text = f"Fraction of your earnings you plan to save annually in your {short_acc_name} accounts (in %)"
-            elif female:
-                text = f"Fraction of her earnings she plans to save annually in her {short_acc_name} accounts (in %)"
-            else:
-                text = f"Fraction of his earnings he plans to save annually in his {short_acc_name} accounts (in %)"
+            if acc != 'other_reg':
+            
+                if which == 'first':
+                    text = f"Fraction of your earnings you plan to save annually in your {short_acc_name} accounts (in %)"
+                elif female:
+                    text = f"Fraction of her earnings she plans to save annually in her {short_acc_name} accounts (in %)"
+                else:
+                    text = f"Fraction of his earnings he plans to save annually in his {short_acc_name} accounts (in %)"
+                d_fin["cont_rate_" + acc] = st.number_input(
+                    text, value=0, min_value=0, max_value=100, step=1, key=f"cont_rate_{acc}_{which}") / 100
                 
-            d_fin["cont_rate_" + acc] = st.number_input(
-                text, value=0, min_value=0, max_value=100, step=1, key=f"cont_rate_{acc}_{which}") / 100
-            
-            if which == 'first':
-                text = f"Amount you plan to withdraw annually from your {short_acc_name} prior to retirement (in $)"
-            elif female:
-                text = f"Amount she plans to withdraw annually from her {short_acc_name} prior to retirement (in $)"
-            else:
-                text = f"Amount he plans to withdraw annually from his {short_acc_name} prior to retirement (in $)"
-            
-            d_fin["withdrawal_" + acc] = st.number_input(
-                text, value=0, min_value=0, step=step_amount, key=f"withdraw_{acc}_{which}")
-            if acc in ["rrsp", "tfsa"]:
-                d_fin["init_room_" + acc] = st.number_input(
-                    "{} contribution room at the end of 2019 (in $)".format(short_acc_name),
-                    value=0, min_value=0, step=step_amount, key=f"init_room_{acc}_{which}")
+                if which == 'first':
+                    text = f"Amount you plan to withdraw annually from your {short_acc_name} prior to retirement (in $)"
+                elif female:
+                    text = f"Amount she plans to withdraw annually from her {short_acc_name} prior to retirement (in $)"
+                else:
+                    text = f"Amount he plans to withdraw annually from his {short_acc_name} prior to retirement (in $)"
+                d_fin["withdrawal_" + acc] = st.number_input(
+                    text, value=0, min_value=0, step=step_amount, key=f"withdraw_{acc}_{which}")
+                if acc in ["rrsp", "tfsa"]:
+                    d_fin["init_room_" + acc] = st.number_input(
+                        "{} contribution room at the end of 2019 (in $)".format(short_acc_name),
+                        value=0, min_value=0, step=step_amount, key=f"init_room_{acc}_{which}")
 
             if d_fin["bal_" + acc] > 0:
                 if which == 'first':
@@ -835,13 +835,13 @@ def write():
     with col_p2:
         st.text("")
         st.text("")
-        if st.button("UPDATE FIGURES", False, help="Click here to update the simulation results"):
+        if st.button("SEE OR UPDATE FIGURES", False, help="Click here to update the simulation results"):
             st.markdown("# Simulation results")
             show_plot_button(df)
             st.text("")
             st.text("")
 
-    if st.button("SHOW FIGURES (below or at top of page)", False, help="Click here to see the simulation results"):
+    if st.button("SEE OR UPDATE FIGURES (higher up)", False, help="Click here to see the simulation results"):
         with col_p2:
             st.markdown("# Simulation results")
             show_plot_button(df)

@@ -384,29 +384,29 @@ def write():
             d_fin["bal_" + acc] = st.number_input(
                 text, value=0, min_value=0, step=step_amount, key=f"bal_{acc}_{which}")
             
-            if which == 'first':
-                text = f"Fraction de vos revenus de travail que vous prévoyez épargner chaque année dans des {short_acc_name} (en %)"
-            elif female:
-                text = f"Fraction of her earnings she plans to save annually in her {short_acc_name} accounts (in %)"
-            else:
-                text = f"Fraction of his earnings he plans to save annually in his {short_acc_name} accounts (in %)"
+            if acc != 'other_reg':
+            
+                if which == 'first':
+                    text = f"Fraction de vos revenus de travail que vous prévoyez épargner chaque année dans des {short_acc_name} (en %)"
+                elif female:
+                    text = f"Fraction of her earnings she plans to save annually in her {short_acc_name} accounts (in %)"
+                else:
+                    text = f"Fraction of his earnings he plans to save annually in his {short_acc_name} accounts (in %)"               
+                d_fin["cont_rate_" + acc] = st.number_input(
+                    text, value=0, min_value=0, max_value=100, step=1, key=f"cont_rate_{acc}_{which}") / 100
                 
-            d_fin["cont_rate_" + acc] = st.number_input(
-                text, value=0, min_value=0, max_value=100, step=1, key=f"cont_rate_{acc}_{which}") / 100
-            
-            if which == 'first':
-                text = f"Montant que vous prévoyez retirer chaque année de vos {short_acc_name} avant la retraite (en $)"
-            elif female:
-                text = f"Amount she plans to withdraw annually from her {short_acc_name} accounts prior to retirement (in $)"
-            else:
-                text = f"Amount he plans to withdraw annually from his {short_acc_name} accounts prior to retirement (in $)"
-            
-            d_fin["withdrawal_" + acc] = st.number_input(
-                text, value=0, min_value=0, step=step_amount, key=f"withdraw_{acc}_{which}")
-            if acc in ["rrsp", "tfsa"]:
-                d_fin["init_room_" + acc] = st.number_input(
-                    f"Espace de cotisation {short_acc_name} à la fin de 2019 (en $)",
-                    value=0, min_value=0, step=step_amount, key=f"init_room_{acc}_{which}")
+                if which == 'first':
+                    text = f"Montant que vous prévoyez retirer chaque année de vos {short_acc_name} avant la retraite (en $)"
+                elif female:
+                    text = f"Amount she plans to withdraw annually from her {short_acc_name} accounts prior to retirement (in $)"
+                else:
+                    text = f"Amount he plans to withdraw annually from his {short_acc_name} accounts prior to retirement (in $)"           
+                d_fin["withdrawal_" + acc] = st.number_input(
+                    text, value=0, min_value=0, step=step_amount, key=f"withdraw_{acc}_{which}")
+                if acc in ["rrsp", "tfsa"]:
+                    d_fin["init_room_" + acc] = st.number_input(
+                        f"Espace de cotisation {short_acc_name} à la fin de 2019 (en $)",
+                        value=0, min_value=0, step=step_amount, key=f"init_room_{acc}_{which}")
 
             if d_fin["bal_" + acc] > 0:
                 if which == 'first':
@@ -842,13 +842,13 @@ def write():
     with col_p2:
         st.text("")
         st.text("")
-        if st.button("METTRE À JOUR LES FIGURES", False, help="Appuyez ici pour mettre à jour les résultats des simulations"):
+        if st.button("VOIR OU METTRE À JOUR LES FIGURES", False, help="Appuyez ici pour mettre à jour les résultats des simulations"):
             st.markdown("# Résultats des simulations")
             show_plot_button(df)
             st.text("")
             st.text("")
 
-    if st.button("MONTRER LES FIGURES (ci-dessous ou au haut de la page)", False, help="Appuyez ici pour voir les résultats des simulations"):
+    if st.button("VOIR OU METTRE À JOUR LES FIGURES (plus haut)", False, help="Appuyez ici pour voir les résultats des simulations"):
         with col_p2:
             st.markdown("# Résultats des simulations")
             show_plot_button(df)
