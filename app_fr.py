@@ -418,13 +418,14 @@ def write():
                     d_fin.update(financial_products(acc, d_fin["bal_" + acc], which,
                                                     short_acc_name, step_amount=step_amount,
                                                     female=False))
+        
         if d_fin["bal_unreg"] > 0:
-            st.markdown("#### Gains et pertes dans Comptes non-enregistrés")
+            st.markdown("#### Gains et pertes dans des comptes non-enregistrés")
             d_fin['cap_gains_unreg'] = st.number_input(
-                "Solde de gains en capitaux non réalisés au premier janvier 2020 (en $)",
+                "Solde de gains en capital non réalisés au 1er janvier 2020 (en $)",
                 value=0, min_value=0, step=step_amount, key="cap_gains_unreg_"+which)
             d_fin['realized_losses_unreg'] = st.number_input(
-                "Pertes en capital réalisées dans des Comptes non-enregistrés au premier janvier 2020 (en $)",
+                "Pertes en capital réalisées dans des comptes non-enregistrés au 1er janvier 2020 (en $)",
                 value=0, min_value=0, step=step_amount, key="realized_losses_unreg_"+which)
         return d_fin
 
