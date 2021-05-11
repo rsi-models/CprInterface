@@ -357,8 +357,10 @@ def write():
         st.markdown("### Savings accounts")
         d_accounts = {'rrsp': ['RRSP', "Registered Retirement Savings Plans (RRSPs)"],
                       'tfsa': ['TFSA', "Tax-Free Savings Accounts (TFSAs)"],
-                      'other_reg':['Other registered', "Other registered accounts"],
-                      'unreg': ['Unregistered', "Unregistered accounts"]}
+                      'other_reg':['other registered accounts', "Other registered accounts"],
+                      'unreg': ['unregistered accounts', "Unregistered accounts"]}
+        cap = lambda s: s.capitalize() if s[0].islower() else s
+        
         # d_accounts_inv = {v: k for k, v in d_accounts.items()}
         saving_plan_select = st.multiselect(
             label="Select one or more account type(s)", options= [v[1] for v in d_accounts.values()],
@@ -369,14 +371,14 @@ def write():
         
         for acc in selected_saving_plans:
             short_acc_name = d_accounts[acc][0]
-            st.markdown("#### {}".format(short_acc_name))
+            st.markdown(f"#### {cap(short_acc_name)}")
             
             if which == 'first':
-                text = f"Balance of your {short_acc_name} accounts at the end of 2019 (in $)"
+                text = f"Balance of your {short_acc_name} at the end of 2019 (in $)"
             elif female:
-                text = f"Balance of her {short_acc_name} accounts at the end of 2019 (in $)"
+                text = f"Balance of her {short_acc_name} at the end of 2019 (in $)"
             else:
-                text = f"Balance of his {short_acc_name} accounts at the end of 2019 (in $)"
+                text = f"Balance of his {short_acc_name} at the end of 2019 (in $)"
                 
             d_fin["bal_" + acc] = st.number_input(
                 text, value=0, min_value=0, step=step_amount, key=f"bal_{acc}_{which}")
@@ -392,11 +394,11 @@ def write():
                 text, value=0, min_value=0, max_value=100, step=1, key=f"cont_rate_{acc}_{which}") / 100
             
             if which == 'first':
-                text = f"Amount you plan to withdraw annually from your {short_acc_name} accounts prior to retirement (in $)"
+                text = f"Amount you plan to withdraw annually from your {short_acc_name} prior to retirement (in $)"
             elif female:
-                text = f"Amount she plans to withdraw annually from her {short_acc_name} accounts prior to retirement (in $)"
+                text = f"Amount she plans to withdraw annually from her {short_acc_name} prior to retirement (in $)"
             else:
-                text = f"Amount he plans to withdraw annually from his {short_acc_name} accounts prior to retirement (in $)"
+                text = f"Amount he plans to withdraw annually from his {short_acc_name} prior to retirement (in $)"
             
             d_fin["withdrawal_" + acc] = st.number_input(
                 text, value=0, min_value=0, step=step_amount, key=f"withdraw_{acc}_{which}")
@@ -419,12 +421,12 @@ def write():
                                                     female=False))
 
         if d_fin["bal_unreg"] > 0:
-            st.markdown("#### Gains and losses in Unregistered account")
+            st.markdown("#### Gains and losses in unregistered accounts")
             d_fin['cap_gains_unreg'] = st.number_input(
                 "Balance of unrealized capital gains as of January 1, 2020 (in $)",
                 value=0, min_value=0, step=step_amount, key="cap_gains_unreg_"+which)
             d_fin['realized_losses_unreg'] = st.number_input(
-                "Realized losses in capital in Unregistered account as of January 1, 2020 (in $)",
+                "Realized losses in capital in unregistered accounts as of January 1, 2020 (in $)",
                 value=0, min_value=0, step=step_amount, key="realized_losses_unreg_"+which)
         return d_fin
 
@@ -432,7 +434,8 @@ def write():
                            female=None):
         d_fin_prod = {}
         total_fp = 0
-        st.markdown("#### {} - Financial products".format(short_acc_name))
+        cap = lambda s: s.capitalize() if s[0].islower() else s
+        st.markdown(f"#### {cap(short_acc_name)} - Financial products")
         fin_prods = ["checking", "premium", "mutual", "stocks", "bonds", "gic",
                      "etf"]
         fin_prods_dict = {"checking": "Checking or regular savings account",

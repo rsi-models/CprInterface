@@ -358,8 +358,10 @@ def write():
         st.markdown("### Comptes d'épargne")
         d_accounts = {'rrsp': ['REER', "Régime enregistré d'épargne-retraite (REER)"],
                       'tfsa': ['CELI', "Compte d'épargne libre d'impôt (CELI)"],
-                      'other_reg':['Autres comptes enregistrés', "Autres comptes enregistrés"],
-                      'unreg': ['Comptes non-enregistrés', "Comptes non-enregistrés"]}
+                      'other_reg':['autres comptes enregistrés', "Autres comptes enregistrés"],
+                      'unreg': ['comptes non-enregistrés', "Comptes non-enregistrés"]}
+        cap = lambda s: s.capitalize() if s[0].islower() else s
+        
         # d_accounts_inv = {v: k for k, v in d_accounts.items()}
         saving_plan_select = st.multiselect(
             label="Sélectionner un ou plusieurs type(s) de compte",
@@ -370,7 +372,7 @@ def write():
         
         for acc in selected_saving_plans:
             short_acc_name = d_accounts[acc][0]
-            st.markdown("#### {}".format(short_acc_name))
+            st.markdown(f"#### {cap(short_acc_name)}")
             
             if which == 'first':
                 text = f"Solde de vos {short_acc_name} à la fin de 2019 (en $)"
@@ -433,7 +435,8 @@ def write():
                            female=None):
         d_fin_prod = {}
         total_fp = 0
-        st.markdown(f"#### {short_acc_name} - Produits financiers")
+        cap = lambda s: s.capitalize() if s[0].islower() else s
+        st.markdown(f"#### {cap(short_acc_name)} - Produits financiers")
         fin_prods = ["checking", "premium", "mutual", "stocks", "bonds", "gic",
                      "etf"]
         fin_prods_dict = {"checking": "Compte chèques ou compte d'épargne régulier",
