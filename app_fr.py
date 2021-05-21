@@ -389,18 +389,20 @@ def write():
                 if which == 'first':
                     text = f"Fraction de vos revenus de travail que vous prévoyez épargner chaque année dans des {short_acc_name} (en %)"
                 elif female:
-                    text = f"Fraction of her earnings she plans to save annually in her {short_acc_name} accounts (in %)"
+                    text = f"Fraction de ses revenus de travail qu’elle prévoit épargner chaque année dans des {short_acc_name} (en %)"
                 else:
-                    text = f"Fraction of his earnings he plans to save annually in his {short_acc_name} accounts (in %)"               
+                    text = f"Fraction de ses revenus de travail qu’il prévoit épargner chaque année dans des {short_acc_name} (en %)"                     
+                                 
                 d_fin["cont_rate_" + acc] = st.number_input(
                     text, value=0, min_value=0, max_value=100, step=1, key=f"cont_rate_{acc}_{which}") / 100
                 
                 if which == 'first':
                     text = f"Montant que vous prévoyez retirer chaque année de vos {short_acc_name} avant la retraite (en $)"
                 elif female:
-                    text = f"Amount she plans to withdraw annually from her {short_acc_name} accounts prior to retirement (in $)"
+                    text = f"Montant qu’elle prévoit retirer chaque année de ses {short_acc_name} avant la retraite (en $)"
                 else:
-                    text = f"Amount he plans to withdraw annually from his {short_acc_name} accounts prior to retirement (in $)"           
+                    text = f"Montant qu’il prévoit retirer chaque année de ses {short_acc_name} avant la retraite (en $)" 
+                              
                 d_fin["withdrawal_" + acc] = st.number_input(
                     text, value=0, min_value=0, step=step_amount, key=f"withdraw_{acc}_{which}")
                 if acc in ["rrsp", "tfsa"]:
