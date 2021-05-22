@@ -10,7 +10,7 @@ botocore
 certifi
 chardet
 Click
-cpr-rsi
+cpr-rsi==1.2.2
 decorator
 docutils
 entrypoints
